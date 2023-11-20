@@ -16,17 +16,20 @@ public class InspectedException extends InspectedEvent {
    List<String> stackTrace;
    public static InspectedException getInstance(Inspector inspector, ExceptionEvent event){
         InspectedException instance = new InspectedException();
-        instance.init(instance, inspector, event);
+        InspectedEvent.init(instance, inspector, event);
         instance.location = event.catchLocation();
         instance.exceptionReference = event.exception();
         instance.stackTrace = new ArrayList<>();
         try{
+            event.thread().suspend();
             int depth = inspector.getMaxFrameCountToInspect() > event.thread().frameCount() ? event.thread().frameCount() : inspector.getMaxFrameCountToInspect();
             instance.stackTrace = JDIReachingUtil.buildStackTrace(event.thread().frames(0, depth));
         }catch(AbsentInformationException e){
             inspector.getLogger().warning(String.format("%s occurs at building stacktrace at handling exception event; skip", e));
         }catch(IncompatibleThreadStateException f){
             inspector.getLogger().warning(String.format("%s occurs at building stacktrace at handling exception event; skip", f));
+        }finally{
+            event.thread().resume();
         }
         return instance;
    } 

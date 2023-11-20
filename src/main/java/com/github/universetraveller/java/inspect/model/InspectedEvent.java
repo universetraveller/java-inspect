@@ -4,9 +4,12 @@ import com.sun.jdi.event.Event;
 
 public abstract class InspectedEvent {
     protected long eventTime;
+    public long getEventTime() {
+        return eventTime;
+    }
     protected long id;
     protected Event eventInstance;
-    protected void init(InspectedEvent instance, Inspector inspector, Event event){
+    protected static void init(InspectedEvent instance, Inspector inspector, Event event){
         instance.eventTime = inspector.getRunningTime();
         instance.id = inspector.getNextId();
         instance.eventInstance = event;

@@ -8,7 +8,7 @@ public class InspectedClassPrepare extends InspectedEvent {
     private ClassType classReference;
     public static InspectedClassPrepare getInstance(Inspector inspector, ClassPrepareEvent event){
         InspectedClassPrepare instance = new InspectedClassPrepare();
-        instance.init(instance, inspector, event);
+        InspectedEvent.init(instance, inspector, event);
         instance.classReference = (ClassType) event.referenceType();
         instance.eventInstance = event;
         return instance;

@@ -12,7 +12,9 @@ import com.sun.jdi.Value;
 
 public class JDIReachingUtil {
     public static List<InspectedVariable> inspectVariables(StackFrame frame) throws AbsentInformationException{
-        List<InspectedVariable> variablesList = new ArrayList<>();
+        return inspectVariables(frame, new ArrayList<>());
+    }
+    public static List<InspectedVariable> inspectVariables(StackFrame frame, List<InspectedVariable> variablesList) throws AbsentInformationException{
         Map<LocalVariable, Value> variables = frame.getValues(frame.visibleVariables());
         for(Map.Entry<LocalVariable, Value> variable : variables.entrySet())
             variablesList.add(new InspectedVariable(variable.getKey(), variable.getValue()));
@@ -21,7 +23,7 @@ public class JDIReachingUtil {
     public static List<InspectedVariable> inspectVariables(List<StackFrame> frames) throws AbsentInformationException{
         List<InspectedVariable> variables = new ArrayList<>();
         for(StackFrame frame : frames)
-            variables.addAll(inspectVariables(frame));
+            inspectVariables(frame, variables);
         return variables;
     }    
     public static List<String> buildStackTrace(List<StackFrame> frames)throws AbsentInformationException{

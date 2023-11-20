@@ -8,6 +8,13 @@ import com.github.universetraveller.java.inspect.model.InspectedBreakpoint;
 import com.github.universetraveller.java.inspect.model.InspectedClassPrepare;
 import com.github.universetraveller.java.inspect.model.InspectedEvent;
 import com.github.universetraveller.java.inspect.model.InspectedException;
+import com.github.universetraveller.java.inspect.model.InspectedFieldAccess;
+import com.github.universetraveller.java.inspect.model.InspectedFieldModification;
+import com.github.universetraveller.java.inspect.model.InspectedMethodEntry;
+import com.github.universetraveller.java.inspect.model.InspectedMethodExit;
+import com.github.universetraveller.java.inspect.model.InspectedMethodInvoking;
+import com.github.universetraveller.java.inspect.model.InspectedOutput;
+import com.github.universetraveller.java.inspect.model.InspectedStep;
 import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.model.InspectorRunner;
 import com.github.universetraveller.java.inspect.util.StreamUtil;
@@ -22,7 +29,6 @@ import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.event.VMDisconnectEvent;
-import com.sun.tools.classfile.Annotation.element_value;
 public class DefaultInspectorRunner extends InspectorRunner {
     public void run(Inspector instance) throws Exception {
         EventSet events = null;
@@ -71,23 +77,46 @@ public class DefaultInspectorRunner extends InspectorRunner {
     }
 
     private static void buildMethodExit(Inspector instance, Event event) {
-        // TODO 
+        InspectedMethodExit methodExit = InspectedMethodExit.getInstance(instance, (MethodExitEvent)event);
+        instance.addEvent(methodExit);
+        methodExit.finish(instance);
+        instance.getLogger().fine("Exit " + methodExit.getMethodInstance());
     }
 
     private static void buildInvokingTail(Inspector instance, Event event) {
-        // TODO
+        instance.getGlobalInvoking().finish(event);
+        instance.getLogger().fine("End invocation of " + instance.getGlobalInvoking().getTail().getMethodInstance());
+        instance.setGlobalInvoking(null);
+    }
+
+    private static void buildInvokingHead(Inspector instance, Event event) {
+        InspectedMethodInvoking invocation = InspectedMethodInvoking.getInstance(instance);
+        instance.setGlobalInvoking(invocation);
+        invocation.register((MethodEntryEvent)event);
+        instance.addEvent(invocation);
+        instance.getLogger().fine("Start invoking " + invocation.getHead().getMethodInstance());
+    }
+
+    private static void buildMethodEntry(Inspector instance, Event event) {
+        InspectedMethodEntry entry = InspectedMethodEntry.getInstance(instance, (MethodEntryEvent)event);
+        instance.addEvent(entry);
+        entry.register(instance);
+        instance.getLogger().fine("Enter " + entry.getMethodInstance());
     }
 
     private static void handleStepEvent(Inspector instance, Event event) {
-       // TODO 
+        instance.addEvent(InspectedStep.getInstance(instance, (StepEvent)event));
+        instance.getLogger().info(event.toString());
     }
 
     private static void handleModificationWatchpointEvent(Inspector instance, Event event) {
-        // TODO
+        instance.addEvent(InspectedFieldModification.getInstance(instance, ((ModificationWatchpointEvent)event)));
+        instance.getLogger().fine("Modify " + ((ModificationWatchpointEvent)event).field());
     }
 
     private static void handleAccessWatchpointEvent(Inspector instance, Event event) {
-        // TODO add access
+        instance.addEvent(InspectedFieldAccess.getInstance(instance, (AccessWatchpointEvent)event));
+        instance.getLogger().fine("Access " + ((AccessWatchpointEvent)event).field());
     }
 
     private static void handleExceptionEvent(Inspector instance, Event event) {
@@ -109,14 +138,6 @@ public class DefaultInspectorRunner extends InspectorRunner {
             instance.disableGlobalEntryHandler();
             instance.addHandlingMethod(((MethodEntryEvent)event).method());
         }
-    }
-
-    private static void buildInvokingHead(Inspector instance, Event event) {
-        // TODO build invoking head
-    }
-
-    private static void buildMethodEntry(Inspector instance, Event event) {
-        // TODO build entry
     }
 
     private static void handleBreakPointEvent(Inspector instance, Event event) {
@@ -144,7 +165,7 @@ public class DefaultInspectorRunner extends InspectorRunner {
             StreamUtil.readFromStream(builder, instance.getVMInputStream());
             output = builder.toString();
             instance.getLogger().info("Normal Output: " + output);
-            // TODO add output to instance's events
+            instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDOUT));
         }catch(IOException e){
             instance.getLogger().warning("Failed to read input stream");
         }
@@ -153,7 +174,7 @@ public class DefaultInspectorRunner extends InspectorRunner {
             StreamUtil.readFromStream(builder, instance.getVMErrorStream());
             output = builder.toString();
             instance.getLogger().info("Error Output: " + output);
-            // TODO add output to instance's events
+            instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDERR));
         }catch(IOException e){
             instance.getLogger().warning("Failed to read input stream");
         }

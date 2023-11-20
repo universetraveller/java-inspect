@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,8 +52,6 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 import com.sun.jdi.request.StepRequest;
-import com.sun.tools.classfile.StackMapTable_attribute.append_frame;
-import com.sun.tools.classfile.StackMapTable_attribute.verification_type_info;
 
 public abstract class Inspector {
     protected String mainClass;
@@ -74,6 +73,16 @@ public abstract class Inspector {
     protected boolean inspectException;
     protected boolean inspectOutput;
     protected boolean inspectFields;
+    protected boolean inspectVariables;
+    public boolean isInspectVariables() {
+        return inspectVariables;
+    }
+
+    protected boolean inspectVariableChanges;
+    public boolean isInspectVariableChanges() {
+        return inspectVariableChanges;
+    }
+
     protected boolean oneShotBreakPoint;
     protected boolean deepStep;
     protected boolean accurateStep;
@@ -90,7 +99,7 @@ public abstract class Inspector {
     }
 
     protected String classFilterPattern;
-    protected HashSet<Method> monitoredMethods;
+    protected ConcurrentHashMap<Method, Stack<InspectedMethodEntry>> monitoredMethods;
     protected VirtualMachine vm;
     protected String[] classFilter;
     protected String[] classExclusionFilter; 
@@ -105,7 +114,14 @@ public abstract class Inspector {
 
     protected String mainValue;
     protected Logger logger;
+    protected InspectedMethodInvoking globalInvoking;
 
+    public InspectedMethodInvoking getGlobalInvoking() {
+        return globalInvoking;
+    }
+    public void setGlobalInvoking(InspectedMethodInvoking globalInvoking) {
+        this.globalInvoking = globalInvoking;
+    }
     public VirtualMachine getVm() {
         return vm;
     }
@@ -127,7 +143,7 @@ public abstract class Inspector {
         this.logger.setLevel(Level.CONFIG);
         this.events = new ArrayList<>();
         this.variableMap = new ConcurrentHashMap<>();
-        this.monitoredMethods = new HashSet<>();
+        this.monitoredMethods = new ConcurrentHashMap<>();
         this.calendar = Calendar.getInstance();
     }
     protected void buildMainValue(){
@@ -350,6 +366,56 @@ public abstract class Inspector {
 
     public boolean isHandlingGlobalMethod(Method method){
         return this.globalEntryRequest.getProperty("HANDLING").equals(method);
+    }
+    public void registerMethod(InspectedMethodEntry entry){
+        Method met = entry.getMethodInstance();
+        monitoredMethods.putIfAbsent(met, new Stack<>());
+        monitoredMethods.get(met).push(entry);
+    }
+    
+    public InspectedMethodEntry finishMethod(InspectedMethodExit event){
+        Method met = event.getMethodInstance();
+        InspectedMethodEntry entry = null;
+        if(monitoredMethods.containsKey(met)){
+            entry = monitoredMethods.get(met).pop();
+            if(monitoredMethods.get(met).empty())
+                monitoredMethods.remove(met);
+        }
+        return entry;
+    }
+    public List<InspectedVariableChange> updateVariableMap(StackFrame targetFrame) throws AbsentInformationException{
+        return updateVariableMap(targetFrame, new ArrayList<>());
+    }
+
+    public List<InspectedVariableChange> updateVariableMap(StackFrame targetFrame, List<InspectedVariableChange> collected) throws AbsentInformationException{
+        for(Map.Entry<LocalVariable, Value> entry : targetFrame.getValues(targetFrame.visibleVariables()).entrySet()){
+            LocalVariable variable = entry.getKey();
+            Value value = entry.getValue();
+            InspectedVariableChange change = null;
+            if(this.variableMap.containsKey(variable)){
+                Value fromValue = this.variableMap.get(variable);
+                if(fromValue.equals(value))
+                    continue;
+                change = new InspectedVariableChange(new InspectedVariable(variable, fromValue), new InspectedVariable(variable, value), null);
+            }else{
+                change = new InspectedVariableChange(new InspectedVariable(variable, value), null);
+            }
+            this.variableMap.put(variable, value);
+            collected.add(change);
+        }
+        return collected;
+    }
+    public List<InspectedVariableChange> updateVariableMap(List<StackFrame> targetFrames) {
+        List<InspectedVariableChange> collected = new ArrayList<>();
+        for(int i = 0; i < this.maxFrameCountToInspect && i < targetFrames.size(); i++){
+            try{
+                updateVariableMap(targetFrames.get(i), collected);
+            }catch(AbsentInformationException e){
+                // ignore it
+                this.logger.warning("AbsentInformationException occurs when updating variable map; skip");
+            }
+        }
+        return collected;
     }
     public abstract void execute(InspectorRunner runner);
 }
