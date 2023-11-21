@@ -1,12 +1,8 @@
 package com.github.universetraveller.java.inspect.inspector;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 import com.github.universetraveller.java.inspect.model.InspectedBreakpoint;
 import com.github.universetraveller.java.inspect.model.InspectedClassPrepare;
-import com.github.universetraveller.java.inspect.model.InspectedEvent;
 import com.github.universetraveller.java.inspect.model.InspectedException;
 import com.github.universetraveller.java.inspect.model.InspectedFieldAccess;
 import com.github.universetraveller.java.inspect.model.InspectedFieldModification;
@@ -38,15 +34,14 @@ public class DefaultInspectorRunner extends InspectorRunner {
                         instance.getLogger().info("VM is going to disconect");
                         return;
                     }
-                    handleEvent(instance, event);
                     handleOutput(instance);
-                    instance.beforeResume();
+                    handleEvent(instance, event);
                     instance.resume();
             }
         }
     }
 
-    private static void handleEvent(Inspector instance, Event event) {
+    public void handleEvent(Inspector instance, Event event) {
         if(event instanceof ClassPrepareEvent)
             handleClassPrepareEvent(instance, event);
         if(event instanceof BreakpointEvent)

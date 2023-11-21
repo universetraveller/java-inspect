@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+    
+
+        {
+            "type": "java",
+            "name": "DefaultClassLoaderJunitCoreTestInvoker",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJunitCoreTestInvoker",
+            "projectName": "java-inspect"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "JUnitCoreTestInvoker",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.test.invoker.JUnitCoreTestInvoker",
+            "projectName": "java-inspect"
+        },
+        {
+            "type": "java",
+            "name": "JUnitCoreTestInvoker_buggy",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.test.invoker.JUnitCoreTestInvoker",
+            "projectName": "java-inspect",
+            "args": "org.apache.commons.lang3.time.FastDateFormat_ParserTest::testLANG_831#org.apache.commons.lang3.time.FastDateParserTest::testShortDateStyleWithLocales :/root/workbench/buggy/target/tests:/root/workbench/buggy/target/classes/:/root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Lang/lib/easymock.jar:/root/defects4j/framework/projects/Lang/lib/commons-io.jar:/root/defects4j/framework/projects/Lang/lib/cglib.jar:/root/defects4j/framework/projects/Lang/lib/asm.jar"
+        },
+        {
+            "type": "java",
+            "name": "DefaultClassLoaderJUnitCoreTestInvoker_buggy",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker",
+            "projectName": "java-inspect",
+            "classPaths": [":./target/classes:/root/workbench/buggy/target/tests:/root/workbench/buggy/target/classes/:/root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Lang/lib/easymock.jar:/root/defects4j/framework/projects/Lang/lib/commons-io.jar:/root/defects4j/framework/projects/Lang/lib/cglib.jar:/root/defects4j/framework/projects/Lang/lib/asm.jar"],
+            "args": "org.apache.commons.lang3.time.FastDateFormat_ParserTest::testLANG_831#org.apache.commons.lang3.time.FastDateParserTest::testShortDateStyleWithLocales"
+        }
+    ]
+}

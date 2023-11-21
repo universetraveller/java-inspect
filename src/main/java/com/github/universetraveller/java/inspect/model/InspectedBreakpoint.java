@@ -1,6 +1,5 @@
 package com.github.universetraveller.java.inspect.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.github.universetraveller.java.inspect.util.JDIReachingUtil;

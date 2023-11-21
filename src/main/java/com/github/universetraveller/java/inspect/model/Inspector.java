@@ -19,31 +19,20 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
-import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
-import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.LocatableEvent;
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.MethodExitEvent;
-import com.sun.jdi.event.ExceptionEvent;
-import com.sun.jdi.event.ModificationWatchpointEvent;
-import com.sun.jdi.event.StepEvent;
-import com.sun.jdi.event.VMDisconnectEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -53,87 +42,54 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 import com.sun.jdi.request.StepRequest;
 
-public abstract class Inspector {
+/*
+ * This class provides a default implementation of launch-virtual-machine style inspector
+ */
+public abstract class Inspector extends BaseInspector {
+    // required configuration (need to be specified)
     protected String mainClass;
+
+    // optional configuration (has default value)
     protected String[] mainArgs;
     protected String classPath;
     protected int[] breakPointLines;
-    protected StepRequest mainStepHandler;
-    protected MethodEntryRequest globalEntryRequest;
-    protected MethodExitRequest globalExitRequest;
-    protected HashSet<Long> threadIds;
     protected boolean inspectMethod;
     protected boolean inspectGlobalMethod;
     protected boolean inspectImplicitMethod;
-    public boolean isInspectImplicitMethod() {
-        return inspectImplicitMethod;
-    }
-
     protected boolean inspectSpectra;
     protected boolean inspectException;
     protected boolean inspectOutput;
     protected boolean inspectFields;
     protected boolean inspectVariables;
-    public boolean isInspectVariables() {
-        return inspectVariables;
-    }
-
     protected boolean inspectVariableChanges;
-    public boolean isInspectVariableChanges() {
-        return inspectVariableChanges;
-    }
-
     protected boolean oneShotBreakPoint;
     protected boolean deepStep;
     protected boolean accurateStep;
-    public boolean isOneShotBreakPoint() {
-        return oneShotBreakPoint;
-    }
-    public boolean isInspectOutput() {
-        return inspectOutput;
-    }
-
     protected int maxFrameCountToInspect;
-    public int getMaxFrameCountToInspect() {
-        return maxFrameCountToInspect;
-    }
-
     protected String classFilterPattern;
-    protected ConcurrentHashMap<Method, Stack<InspectedMethodEntry>> monitoredMethods;
-    protected VirtualMachine vm;
     protected String[] classFilter;
     protected String[] classExclusionFilter; 
+    protected String baseSrcDir;
+    protected Map<String, List<String>> methodsToInspect;
+
+    // invisible fields (can not be configured by users)
+    protected String mainValue;
+    protected long eventId;
+    protected Logger logger;
     protected List<InspectedEvent> events;
     protected Map<LocalVariable, Value> variableMap;
-    protected Map<String, List<String>> methodsToInspect;
-    protected String baseSrcDir;
-    protected long startTimeStamp;
+    protected ConcurrentHashMap<Method, Stack<InspectedMethodEntry>> monitoredMethods;
+    protected HashSet<ClassType> inspectedClass;
     protected Calendar calendar;
-    protected long eventId;
-
-
-    protected String mainValue;
-    protected Logger logger;
+    protected StepRequest mainStepHandler;
+    protected MethodEntryRequest globalEntryRequest;
+    protected MethodExitRequest globalExitRequest;
+    protected HashSet<Long> threadIds;
     protected InspectedMethodInvoking globalInvoking;
+    protected long startTimeStamp;
 
-    public InspectedMethodInvoking getGlobalInvoking() {
-        return globalInvoking;
-    }
-    public void setGlobalInvoking(InspectedMethodInvoking globalInvoking) {
-        this.globalInvoking = globalInvoking;
-    }
-    public VirtualMachine getVm() {
-        return vm;
-    }
-    public void setVm(VirtualMachine vm) {
-        this.vm = vm;
-    }
-    public void setLogLevel(Level level){
-        this.logger.setLevel(level);
-    }
-
-    public Logger getLogger(){
-        return this.logger;
+    public Inspector() {
+        this.init();
     }
 
     protected void init(){
@@ -144,8 +100,54 @@ public abstract class Inspector {
         this.events = new ArrayList<>();
         this.variableMap = new ConcurrentHashMap<>();
         this.monitoredMethods = new ConcurrentHashMap<>();
+        this.inspectedClass = new HashSet<>();
         this.calendar = Calendar.getInstance();
+        this.mainStepHandler = null;
+        this.globalEntryRequest = null;
+        this.globalExitRequest = null;
+        this.threadIds = new HashSet<>();
+        this.globalInvoking = null;
+        this.startTimeStamp = 0;
     }
+
+    public boolean isInspectImplicitMethod() {
+        return inspectImplicitMethod;
+    }
+
+    public boolean isInspectVariables() {
+        return inspectVariables;
+    }
+
+    public boolean isInspectVariableChanges() {
+        return inspectVariableChanges;
+    }
+
+    public boolean isOneShotBreakPoint() {
+        return oneShotBreakPoint;
+    }
+    public boolean isInspectOutput() {
+        return inspectOutput;
+    }
+
+    public int getMaxFrameCountToInspect() {
+        return maxFrameCountToInspect;
+    }
+
+    public InspectedMethodInvoking getGlobalInvoking() {
+        return globalInvoking;
+    }
+    public void setGlobalInvoking(InspectedMethodInvoking globalInvoking) {
+        this.globalInvoking = globalInvoking;
+    }
+    
+    public void setLogLevel(Level level){
+        this.logger.setLevel(level);
+    }
+
+    public Logger getLogger(){
+        return this.logger;
+    }
+
     protected void buildMainValue(){
         StringBuilder builder = new StringBuilder(this.mainClass);
         for(String arg : this.mainArgs)
@@ -156,7 +158,8 @@ public abstract class Inspector {
         LaunchingConnector launchingConnector = Bootstrap.virtualMachineManager().defaultConnector();
         Map<String, Connector.Argument> arguments = launchingConnector.defaultArguments();
         arguments.get("main").setValue(this.mainValue);
-        arguments.get("options").setValue("-cp " + this.classPath);
+        if(!this.classPath.isEmpty())
+            arguments.get("options").setValue("-cp " + this.classPath);
         this.logger.config(String.format("JVM invoking arguments: %s %s", arguments.get("main"), arguments.get("options")));
         VirtualMachine vm = launchingConnector.launch(arguments);
         this.startTimeStamp = this.calendar.getTimeInMillis();
@@ -182,10 +185,10 @@ public abstract class Inspector {
 
     protected ClassPrepareRequest makeClassPrepareRequest(){
         ClassPrepareRequest classPrepareRequest = vm.eventRequestManager().createClassPrepareRequest();
-        if(this.classFilter != null)
+        if(this.classExclusionFilter != null)
             for(String filterPattern : this.classExclusionFilter)
                 classPrepareRequest.addClassExclusionFilter(filterPattern);
-        if(this.classExclusionFilter != null)
+        if(this.classFilter != null)
             for(String filterPattern : this.classFilter)
                 classPrepareRequest.addClassFilter(filterPattern);
         this.logger.config(String.format("ClassPrepareRequest %s is made", classPrepareRequest));
@@ -213,7 +216,8 @@ public abstract class Inspector {
                 }
             }
             tryToInspectFields(classType);
-        }else if(this.methodsToInspect.keySet().contains(nClz)){
+        }
+        if(this.methodsToInspect.containsKey(nClz)){
            ClassType classType = (ClassType) event.referenceType(); 
            for(String nMet : this.methodsToInspect.get(nClz)){
                 for(Method sMet : classType.methodsByName(nMet)){
@@ -227,8 +231,9 @@ public abstract class Inspector {
     }
 
     protected void tryToInspectFields(ClassType classType) {
-        if(!this.inspectFields)
+        if(!this.inspectFields || this.inspectedClass.contains(classType))
             return;
+        this.inspectedClass.add(classType);
         for(Field field : classType.visibleFields()){
             AccessWatchpointRequest awr = vm.eventRequestManager().createAccessWatchpointRequest(field);
             awr.enable();
@@ -302,6 +307,8 @@ public abstract class Inspector {
         this.logger.info("Add spectra insepctor");
 
         this.threadToBusy(t);
+
+        this.mainStepHandler = sr;
     }
     public void makeExceptionRequest(BreakpointEvent event) {
         if(!this.inspectException)
@@ -314,12 +321,8 @@ public abstract class Inspector {
         return this.vm.eventQueue().remove();
     }
     public void resume(){
+        this.beforeResume();
         this.vm.resume();
-    }
-
-    public void beforeResume(){
-        // Do nothing there
-        // debuggers should override it
     }
 
     public InputStream getVMInputStream(){

@@ -1,8 +1,6 @@
 package com.github.universetraveller.java.inspect.model;
 
 import com.sun.jdi.Field;
-import com.sun.jdi.Location;
-import com.sun.jdi.Value;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 
 public class InspectedFieldModification  extends InspectedEvent{
