@@ -38,11 +38,17 @@ class ParseResult {
 public class JUnitCoreTestInvoker {
     public static void main(String[] args) {
         Result result = run(parse(args));
+        int assmptionFailureCount = 0;
+        try{
+            assmptionFailureCount = (int)result.getClass().getMethod("getAssumptionFailureCount").invoke(result);
+        }catch(Exception e){
+            // ignore
+        }
         System.out.println(String.format("Run %s tests in %s ms; ignore %s tests; skip %s tests; %s tests failed --- %s",
          result.getRunCount(),
           result.getRunTime(),
           result.getIgnoreCount(),
-          result.getAssumptionFailureCount(),
+          assmptionFailureCount,
           result.getFailureCount(),
           result.wasSuccessful() ? "PASS" : "FAIL"));
         for(Failure f : result.getFailures()){

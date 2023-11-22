@@ -8,6 +8,9 @@ public abstract class InspectedEvent {
         return eventTime;
     }
     protected long id;
+    public long getId() {
+        return id;
+    }
     protected Event eventInstance;
     protected static void init(InspectedEvent instance, Inspector inspector, Event event){
         instance.eventTime = inspector.getRunningTime();

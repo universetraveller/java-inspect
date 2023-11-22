@@ -41,7 +41,11 @@ public class MainInspector extends Inspector {
     }
 
     public static MainInspector getInstance() {
-        return new MainInspector(null,
+        return new MainInspector();
+    }
+
+    public MainInspector(){
+        this(null,
                 new String[0],
                 "",
                 new int[0],

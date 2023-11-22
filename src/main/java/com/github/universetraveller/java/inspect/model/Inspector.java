@@ -110,6 +110,10 @@ public abstract class Inspector extends BaseInspector {
         this.startTimeStamp = 0;
     }
 
+    public List<InspectedEvent> getEvents() {
+        return events;
+    }
+
     public boolean isInspectImplicitMethod() {
         return inspectImplicitMethod;
     }
