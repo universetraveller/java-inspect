@@ -16,8 +16,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import com.github.universetraveller.java.inspect.inspector.DefaultInspectorRunner;
 import com.github.universetraveller.java.inspect.inspector.MainInspector;
 import com.github.universetraveller.java.inspect.model.Inspector;
+import com.github.universetraveller.java.inspect.reporter.FileInspectionReporter;
 
 public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "project", readonly = true, required = true)
@@ -86,7 +88,7 @@ public class AbstractInspectorMojo extends AbstractMojo {
     // skip classFilter
     // skip classExclusionFilter
 
-    @Parameter(property = "baseDir", defaultValue = "./")
+    @Parameter(property = "baseDir", defaultValue = "")
     protected String baseDir;
 
     @Parameter(property = "methodToInspect", defaultValue = "")
@@ -135,6 +137,13 @@ public class AbstractInspectorMojo extends AbstractMojo {
                 methodMap.get(pair[0]).add(pair[1]);
             }
         }
+        if(this.baseDir.isEmpty()){
+            if(this.mainClass.startsWith("com.github.universetraveller.java.test"))
+                this.baseDir = this.project.getBuild().getTestSourceDirectory();
+            else
+                this.baseDir = this.project.getBuild().getSourceDirectory();
+        }
+
         MainInspector inspector = MainInspector.getInstance()
                                     .configMainClass(mainClass)
                                     .configMainArgs(args)
@@ -158,6 +167,10 @@ public class AbstractInspectorMojo extends AbstractMojo {
 //                                  .configClassExclusionFilter()
                                     .configBaseSrcDir(baseDir)
                                     .configMethodToInspect(methodMap);
+        
+        inspector.execute(new DefaultInspectorRunner());
+        FileInspectionReporter reporter = new FileInspectionReporter(this.reportDir + "/InspectionReport", inspector);
+        reporter.generateReport();
     }
 
     private String getClassPaths() {
