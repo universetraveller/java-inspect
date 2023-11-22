@@ -4,9 +4,28 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
-    
-
+        {
+            "type": "java",
+            "name": "Launch with Arguments Prompt",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.inspect.DefaultMain",
+            "args": "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker org.apache.commons.lang3.time.FastDateFormat_ParserTest::testLANG_831#org.apache.commons.lang3.time.FastDateParserTest::testShortDateStyleWithLocales :/root/.m2/repository/commons-io/commons-io/2.4/commons-io-2.4.jar:/root/workbench/buggy/target/classes:/root/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:/root/workbench/buggy/target/test-classes:/root/.m2/repository/com/github/universetraveller/java-inspect/0.0.1/java-inspect-0.0.1.jar:/root/.m2/repository/junit/junit/4.10/junit-4.10.jar:/root/.m2/repository/cglib/cglib-nodep/2.2.2/cglib-nodep-2.2.2.jar:/root/.m2/repository/org/easymock/easymock/3.1/easymock-3.1.jar:/root/.m2/repository/org/objenesis/objenesis/1.2/objenesis-1.2.jar org.apache.commons.*",
+            "classPaths": [":/root/.m2/repository/commons-io/commons-io/2.4/commons-io-2.4.jar:/root/workbench/buggy/target/classes:/root/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:/root/workbench/buggy/target/test-classes:/root/.m2/repository/com/github/universetraveller/java-inspect/0.0.1/java-inspect-0.0.1.jar:/root/.m2/repository/junit/junit/4.10/junit-4.10.jar:/root/.m2/repository/cglib/cglib-nodep/2.2.2/cglib-nodep-2.2.2.jar:/root/.m2/repository/org/easymock/easymock/3.1/easymock-3.1.jar:/root/.m2/repository/org/objenesis/objenesis/1.2/objenesis-1.2.jar:/root/workbench/java-inspect/lib/tools.jar"]
+        },
+        {
+            "type": "java",
+            "name": "DefaultMain",
+            "request": "launch",
+            "mainClass": "com.github.universetraveller.java.inspect.DefaultMain",
+            "projectName": "java-inspect"
+        },
+        {
+            "type": "java",
+            "name": "Attach to Remote Program",
+            "request": "attach",
+            "hostName": "127.0.0.1",
+            "port": "8000"
+        },
         {
             "type": "java",
             "name": "DefaultClassLoaderJunitCoreTestInvoker",
@@ -41,7 +60,9 @@
             "request": "launch",
             "mainClass": "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker",
             "projectName": "java-inspect",
-            "classPaths": [":./target/classes:/root/workbench/buggy/target/tests:/root/workbench/buggy/target/classes/:/root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Lang/lib/easymock.jar:/root/defects4j/framework/projects/Lang/lib/commons-io.jar:/root/defects4j/framework/projects/Lang/lib/cglib.jar:/root/defects4j/framework/projects/Lang/lib/asm.jar"],
+            "classPaths": [
+                ":./target/classes:/root/workbench/buggy/target/tests:/root/workbench/buggy/target/classes/:/root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Lang/lib/easymock.jar:/root/defects4j/framework/projects/Lang/lib/commons-io.jar:/root/defects4j/framework/projects/Lang/lib/cglib.jar:/root/defects4j/framework/projects/Lang/lib/asm.jar"
+            ],
             "args": "org.apache.commons.lang3.time.FastDateFormat_ParserTest::testLANG_831#org.apache.commons.lang3.time.FastDateParserTest::testShortDateStyleWithLocales"
         }
     ]

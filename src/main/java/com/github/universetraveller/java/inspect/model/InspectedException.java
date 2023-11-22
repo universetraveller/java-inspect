@@ -8,6 +8,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.ExceptionEvent;
 
 public class InspectedException extends InspectedEvent {
@@ -20,16 +21,18 @@ public class InspectedException extends InspectedEvent {
         instance.location = event.catchLocation();
         instance.exceptionReference = event.exception();
         instance.stackTrace = new ArrayList<>();
+        boolean lock = false;
         try{
-            event.thread().suspend();
+            lock = JDIReachingUtil.suspend(event.thread());
             int depth = inspector.getMaxFrameCountToInspect() > event.thread().frameCount() ? event.thread().frameCount() : inspector.getMaxFrameCountToInspect();
             instance.stackTrace = JDIReachingUtil.buildStackTrace(event.thread().frames(0, depth));
         }catch(AbsentInformationException e){
             inspector.getLogger().warning(String.format("%s occurs at building stacktrace at handling exception event; skip", e));
-        }catch(IncompatibleThreadStateException f){
+        }catch(IncompatibleThreadStateException | VMDisconnectedException f){
             inspector.getLogger().warning(String.format("%s occurs at building stacktrace at handling exception event; skip", f));
         }finally{
-            event.thread().resume();
+            if(lock)
+                JDIReachingUtil.resume(event.thread());
         }
         return instance;
    } 

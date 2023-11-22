@@ -2,12 +2,15 @@ package com.github.universetraveller.java.inspect.model;
 
 import java.util.List;
 
+import javax.swing.JScrollBar;
+
 import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
 
 public class InspectedBreakpoint extends InspectedEvent {
@@ -22,7 +25,7 @@ public class InspectedBreakpoint extends InspectedEvent {
         instance.variableChanges = null;
     }
     protected static void inspectThread(InspectedBreakpoint instance, Inspector inspector, ThreadReference t){
-        t.suspend();
+        boolean lock = JDIReachingUtil.suspend(t);
         try{
             List<StackFrame> targetFrames = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());
             if(inspector.isInspectVariables())
@@ -32,10 +35,12 @@ public class InspectedBreakpoint extends InspectedEvent {
             instance.frameDepth = t.frameCount();
         }catch(AbsentInformationException e){
             inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling breakpoint event; skip", e));
-        }catch(IncompatibleThreadStateException f){
+        }catch(IncompatibleThreadStateException | VMDisconnectedException f){
             inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling breakpoint event; skip", f));
+        }finally{
+            if(lock)
+                JDIReachingUtil.resume(t);
         }
-        t.resume();
     }
     public static InspectedBreakpoint getInstance(Inspector inspector, BreakpointEvent event){
         InspectedBreakpoint instance = new InspectedBreakpoint();

@@ -18,7 +18,6 @@ import org.apache.maven.project.MavenProject;
 
 import com.github.universetraveller.java.inspect.inspector.DefaultInspectorRunner;
 import com.github.universetraveller.java.inspect.inspector.MainInspector;
-import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.reporter.FileInspectionReporter;
 
 public class AbstractInspectorMojo extends AbstractMojo {
@@ -34,13 +33,13 @@ public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "mainClass", defaultValue = "com.github.universetraveller.java.test.DefaultClassLoaderJUnitCoreInvoker")
     protected String mainClass;
 
-    @Parameter(property = "mainArgs", defaultValue = "")
+    @Parameter(property = "mainArgs")
     protected String mainArgs;
 
-    @Parameter(property = "classPath", defaultValue = "")
+    @Parameter(property = "classPath")
     protected String classPath;
 
-    @Parameter(property = "breakPointLines", defaultValue = "")
+    @Parameter(property = "breakPointLines")
     protected String breakPointLines;
 
     @Parameter(property = "inspectMethod", defaultValue = "true")
@@ -88,10 +87,10 @@ public class AbstractInspectorMojo extends AbstractMojo {
     // skip classFilter
     // skip classExclusionFilter
 
-    @Parameter(property = "baseDir", defaultValue = "")
+    @Parameter(property = "baseDir")
     protected String baseDir;
 
-    @Parameter(property = "methodToInspect", defaultValue = "")
+    @Parameter(property = "methodToInspect")
     protected String methodToInspect;
 
     @Parameter(property = "reportDir", defaultValue = "./")
@@ -103,13 +102,14 @@ public class AbstractInspectorMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         checkProperties();
         internalClassPath = getClassPaths();
-        if(!classPath.isEmpty())
+        if(classPath != null)
             internalClassPath = classPath + ":" + internalClassPath;
         getLog().info("Used classpath: " + internalClassPath);
         try{
             if(this.inspectorName.equals("com.github.universetraveller.java.inspect.inspector.MainInspector"))
                 runMainInspector();
-            throw new IllegalStateException("No valid inspector exists");
+            else
+                throw new IllegalStateException("No valid inspector exists");
         }catch(Exception e){
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -123,21 +123,21 @@ public class AbstractInspectorMojo extends AbstractMojo {
             args = this.mainArgs.split(" ");
 
         int[] bpl = new int[0];
-        if(!this.breakPointLines.isEmpty()){
+        if(this.breakPointLines != null){
             String[] sbpl = this.breakPointLines.split(",");
             bpl = new int[sbpl.length];
             for(int i = 0; i < sbpl.length; i++)
                 bpl[i] = Integer.parseInt(sbpl[i]);
         }
         Map<String, List<String>> methodMap = new HashMap<>();
-        if(!this.methodToInspect.isEmpty()){
+        if(this.methodToInspect != null){
             for(String classWithMethod : this.methodToInspect.split("#")){
                 String[] pair = classWithMethod.split("::");
                 methodMap.putIfAbsent(pair[0], new ArrayList<>());
                 methodMap.get(pair[0]).add(pair[1]);
             }
         }
-        if(this.baseDir.isEmpty()){
+        if(this.baseDir == null){
             if(this.mainClass.startsWith("com.github.universetraveller.java.test"))
                 this.baseDir = this.project.getBuild().getTestSourceDirectory();
             else
@@ -204,10 +204,10 @@ public class AbstractInspectorMojo extends AbstractMojo {
     }
 
     private void checkProperties() throws MojoFailureException {
-        if(methodToInspect.isEmpty() && breakPointLines.isEmpty())
+        if(methodToInspect == null && breakPointLines == null)
             throw new MojoFailureException("Should have at least one inspected method or breakpoint");
         
-        if(mainClass.isEmpty() || inspectorName.isEmpty())
+        if(mainClass == null || inspectorName.isEmpty())
             throw new MojoFailureException("mainClass and inspectorName should both be not empty");
     }
 }

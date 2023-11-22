@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.model.InspectorRunner;
+import com.sun.jdi.VMDisconnectedException;
 
 public class MainInspector extends Inspector {
 
@@ -185,8 +186,8 @@ public class MainInspector extends Inspector {
     }
 
     private void prepareToRun() throws Exception {
-        this.validateFields();
         this.vm = this.launchVirtualMachine();
+        this.validateFields();
         this.makeClassPrepareRequest().enable();
     }
 
@@ -194,7 +195,9 @@ public class MainInspector extends Inspector {
         try {
             this.prepareToRun();
             runner.run(this);
-        } catch (Exception e) {
+        }catch(VMDisconnectedException e){ 
+            this.logger.info("VM may be disconnected. You can use attaching inspector to inspect tail events");
+        }catch (Exception e) {
             this.logger.severe("MainInspector process is unexpectedly stopped");
             e.printStackTrace();
         }

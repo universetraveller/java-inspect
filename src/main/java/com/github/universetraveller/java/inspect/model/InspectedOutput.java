@@ -15,7 +15,7 @@ public class InspectedOutput extends InspectedEvent{
 
     public String buildString(){
         return new StringBuffer()
-                     .append("<").append(this.name).append(">\n")
+                     .append("<").append(this.name).append(">")
                      .append(this.content)
                      .append("</").append(this.name).append(">")
                      .toString();

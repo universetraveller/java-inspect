@@ -93,7 +93,6 @@ public abstract class Inspector extends BaseInspector {
     }
 
     protected void init(){
-        this.buildMainValue();
         this.eventId = -1;
         this.logger = Logger.getLogger(Inspector.class.getName());
         this.logger.setLevel(Level.CONFIG);
@@ -108,6 +107,7 @@ public abstract class Inspector extends BaseInspector {
         this.threadIds = new HashSet<>();
         this.globalInvoking = null;
         this.startTimeStamp = 0;
+        this.mainValue = null;
     }
 
     public List<InspectedEvent> getEvents() {
@@ -152,13 +152,17 @@ public abstract class Inspector extends BaseInspector {
         return this.logger;
     }
 
-    protected void buildMainValue(){
+    protected void buildMainValue() throws IOException {
+        if(this.mainClass == null)
+            throw new IOException("Empty input field mainClass");
         StringBuilder builder = new StringBuilder(this.mainClass);
         for(String arg : this.mainArgs)
-            builder.append(arg).append(" ");
+            builder.append(" ").append(arg);
         this.mainValue = builder.toString();
     }
     protected VirtualMachine launchVirtualMachine() throws IOException, IllegalConnectorArgumentsException, VMStartException {
+        if(this.mainValue == null)
+            this.buildMainValue();
         LaunchingConnector launchingConnector = Bootstrap.virtualMachineManager().defaultConnector();
         Map<String, Connector.Argument> arguments = launchingConnector.defaultArguments();
         arguments.get("main").setValue(this.mainValue);
@@ -181,8 +185,8 @@ public abstract class Inspector extends BaseInspector {
 
     public void addEvent(InspectedEvent event){
         if(this.eventId != this.events.size()){
-            this.logger.warning(String.format("Event id unmatched: %s and %; reset eventId", this.eventId, this.events.size()));
-            this.eventId = this.events.size()-1;
+            //this.logger.warning(String.format("Event id unmatched: %s and %s; reset eventId", this.eventId, this.events.size()));
+            this.eventId = this.events.size();
         }
         this.events.add(event);
     }
@@ -372,7 +376,12 @@ public abstract class Inspector extends BaseInspector {
     }
 
     public boolean isHandlingGlobalMethod(Method method){
-        return this.globalEntryRequest.getProperty("HANDLING").equals(method);
+	    Method nowHandling = (Method)this.globalEntryRequest.getProperty("HANDLING");
+	    if(nowHandling == null){
+		    this.logger.warning(String.format("%s try to compare with null; skip it", method));
+		    return false;
+	    }
+        return nowHandling.equals(method);
     }
     public void registerMethod(InspectedMethodEntry entry){
         Method met = entry.getMethodInstance();
@@ -398,6 +407,8 @@ public abstract class Inspector extends BaseInspector {
         for(Map.Entry<LocalVariable, Value> entry : targetFrame.getValues(targetFrame.visibleVariables()).entrySet()){
             LocalVariable variable = entry.getKey();
             Value value = entry.getValue();
+	    if(value == null)
+		    continue;
             InspectedVariableChange change = null;
             if(this.variableMap.containsKey(variable)){
                 Value fromValue = this.variableMap.get(variable);

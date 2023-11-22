@@ -79,7 +79,12 @@ public class DefaultInspectorRunner extends InspectorRunner {
     }
 
     private static void buildInvokingTail(Inspector instance, Event event) {
-        instance.getGlobalInvoking().finish(event);
+        InspectedMethodInvoking invocation = instance.getGlobalInvoking();
+	if(invocation == null){
+		instance.getLogger().warning(String.format("Try to finish null when handling %s; skip it", event));
+		return;
+	}
+	invocation.finish(event);
         instance.getLogger().fine("End invocation of " + instance.getGlobalInvoking().getTail().getMethodInstance());
         instance.setGlobalInvoking(null);
     }
@@ -154,24 +159,30 @@ public class DefaultInspectorRunner extends InspectorRunner {
     private static void handleOutput(Inspector instance){
         if(!instance.isInspectOutput())
             return;
-        StringBuilder builder = new StringBuilder();
+        StringBuffer builder = new StringBuffer();
         String output = "";
         try{
             StreamUtil.readFromStream(builder, instance.getVMInputStream());
             output = builder.toString();
-            instance.getLogger().info("Normal Output: " + output);
-            instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDOUT));
+	    if(!output.isEmpty()){
+		    instance.getLogger().info("Normal Output: " + output);
+		    instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDOUT));
+	    }
         }catch(IOException e){
             instance.getLogger().warning("Failed to read input stream");
+            e.printStackTrace();
         }
-        builder = new StringBuilder();
+        builder = new StringBuffer();
         try{
             StreamUtil.readFromStream(builder, instance.getVMErrorStream());
             output = builder.toString();
-            instance.getLogger().info("Error Output: " + output);
-            instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDERR));
+	    if(!output.isEmpty()){
+		    instance.getLogger().info("Error Output: " + output);
+		    instance.addEvent(InspectedOutput.getInstance(instance, output, InspectedOutput.STDERR));
+	    }
         }catch(IOException e){
             instance.getLogger().warning("Failed to read input stream");
+            e.printStackTrace();
         }
     }
 }

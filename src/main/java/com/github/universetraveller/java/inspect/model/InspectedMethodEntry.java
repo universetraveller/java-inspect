@@ -1,7 +1,9 @@
 package com.github.universetraveller.java.inspect.model;
 
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.MethodEntryEvent;
+import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
 
@@ -12,20 +14,24 @@ public class InspectedMethodEntry extends InspectedMethod {
         InspectedEvent.init(instance, inspector, event);
         instance.methodInstance = event.method();
         instance.location = event.location();
-        ThreadReference t = event.thread();
-        t.suspend();
+        ThreadReference t = null;
+        boolean lock = false;
         try{
+            t = event.thread();
+            lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());
             instance.caller = t.frame(1);
             instance.nowFrame = t.frame(0);
-        }catch(IncompatibleThreadStateException e){
+        }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.nowFrame = null;
+        }finally{
+            if(t != null && lock)
+                JDIReachingUtil.resume(t);
         }
-        t.resume();
         return instance;
     }
     public void register(Inspector manager){

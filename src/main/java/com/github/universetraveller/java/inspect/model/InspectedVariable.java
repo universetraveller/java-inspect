@@ -19,18 +19,19 @@ public class InspectedVariable {
         this.valueInstance = value;
         this.identifier = localVariable.toString();
         this.signature = String.format("%s#%s", localVariable.genericSignature(), localVariable.signature());
-        this.valueString = value.toString();
+        this.valueString = value == null ? "<NULL>" : value.toString();
         if(!localVariable.typeName().isEmpty())
             this.valueType = localVariable.typeName();
         else
-            this.valueType = value.type().toString();
+            this.valueType = value == null ? "<NONE>" : value.type().toString();
     }
     public InspectedVariable(Field field, Value value){
+        this.variableInstance = null;
         this.valueInstance = value;
         this.identifier = field.toString();
-        this.variableInstance = null;
-        this.valueString = value.toString();
-        this.valueType = field.typeName().isEmpty() ? value.type().toString() : field.typeName();
+	this.signature = "<NONE>";
+        this.valueString = value == null ? "<NONE>" : value.toString();
+        this.valueType = field.typeName().isEmpty() ? (value == null ? "<NONE>" : value.type().toString()) : field.typeName();
     }
     public String toString(){
         return String.format("<Variable name='%s' type='%s' value='%s' signature='%s'/>", this.identifier, this.valueType, this.valueString, this.signature);

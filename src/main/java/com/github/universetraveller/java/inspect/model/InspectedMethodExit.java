@@ -1,8 +1,10 @@
 package com.github.universetraveller.java.inspect.model;
 
+import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.event.ExceptionEvent;
 import com.sun.jdi.event.MethodExitEvent;
@@ -24,20 +26,24 @@ public class InspectedMethodExit extends InspectedMethod{
         instance.methodInstance = event.method();
         instance.location = event.location();
         instance.exectionValue = event.returnValue();
-        ThreadReference t = event.thread();
-        t.suspend();
+        ThreadReference t = null;
+        boolean lock = false;
         try{
+            t = event.thread();
+            lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());        
             instance.caller = t.frame(0);
             instance.destFrame = t.frame(0);
-        }catch(IncompatibleThreadStateException e){
+        }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.destFrame = null;
+        }finally{
+            if(t != null && lock)
+                JDIReachingUtil.resume(t);
         }
-        t.resume();
         instance.exectionTime = -1;
         instance.exitCause = "return";
         return instance;
@@ -48,19 +54,23 @@ public class InspectedMethodExit extends InspectedMethod{
         instance.methodInstance = event.catchLocation().method();
         instance.location = event.catchLocation();
         instance.exectionValue = null;
+        ThreadReference t = null;
+        boolean lock = false;
         try{
-            ThreadReference t = event.thread();
-            t.suspend();
+            t = event.thread();
+            lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());        
             instance.caller = t.frame(0);
             instance.destFrame = t.frame(0);
-            t.resume();
-        }catch(IncompatibleThreadStateException e){
+        }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.destFrame = null;
+        }finally{
+            if(t != null && lock)
+                JDIReachingUtil.resume(t);
         }
         instance.exectionTime = -1;
         instance.exitCause = "exception";

@@ -1,5 +1,7 @@
 package com.github.universetraveller.java.inspect.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +11,8 @@ public class InspectionReport implements Report {
     private Map<Long, Class> idMap;
     public InspectionReport(Inspector inspector){
         this.inspector = inspector;
+        this.elements = new ArrayList<>();
+        this.idMap = new HashMap<>();
     }
     public List<ReportElement> getElements() {
         return elements;
@@ -36,10 +40,10 @@ public class InspectionReport implements Report {
     }
     public String buildString(){
         StringBuffer builder = new StringBuffer();
-        builder.append("<InspectionReport>");
+        builder.append("<InspectionReport>\n");
         for(ReportElement element : this.elements)
             builder.append(element.toString());
-        builder.append("</InspectionReport>");
+        builder.append("\n</InspectionReport>");
         return builder.toString();
     }
     public String toString(){

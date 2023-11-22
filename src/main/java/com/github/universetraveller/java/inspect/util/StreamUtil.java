@@ -6,11 +6,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class StreamUtil {
-    public static void readFromStream(StringBuilder builder, InputStream inputStream) throws IOException{
+    public static void readFromStream(StringBuffer builder, InputStream inputStream) throws IOException{
         BufferedReader input = new BufferedReader(new InputStreamReader(inputStream));
-        String getLine = null;
-        while ((getLine = input.readLine()) != null){
-            builder.append(getLine).append("\n");
+        while (true){
+		/*
+            try{
+                if(inputStream.available() <= 0)
+                    break;
+            }catch(IOException e){
+                break;
+            }
+		*/
+            if(!input.ready())
+                break;
+            int ret = input.read();
+            if(ret == -1)
+                break;
+            builder.append((char)ret);
         }
         input.close();
     }
