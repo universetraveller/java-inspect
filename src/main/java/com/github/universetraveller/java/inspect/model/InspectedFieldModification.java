@@ -13,10 +13,11 @@ public class InspectedFieldModification  extends InspectedEvent{
         instance.fieldInstance = event.field();
         instance.fieldName = event.field().name();
         instance.fieldChange = new InspectedVariableChange(new InspectedVariable(instance.fieldInstance, event.valueCurrent()), new InspectedVariable(instance.fieldInstance, event.valueToBe()), event.location());
+        instance.buildString();
         return instance;
     }
 
-    public String buildString(){
+    protected String internalBuildString(){
         return String.format("<FieldModification %s/>", this.fieldChange.toString());
     }
 }

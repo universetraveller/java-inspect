@@ -16,9 +16,10 @@ public class InspectedClassPrepare extends InspectedEvent {
 		instance.classReference = null;
 	}
         instance.eventInstance = event;
+        instance.buildString();
         return instance;
     } 
-    public String buildString(){
+    protected String internalBuildString(){
         return String.format("<ClassPrepare className='%s' classRef='%s' time='%s' id='%s'/>", this.className, this.classReference, this.eventTime, this.id);
     }
 }

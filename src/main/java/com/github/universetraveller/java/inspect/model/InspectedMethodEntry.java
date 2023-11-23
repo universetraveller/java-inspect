@@ -13,7 +13,7 @@ public class InspectedMethodEntry extends InspectedMethod {
         InspectedMethodEntry instance = new InspectedMethodEntry();
         InspectedEvent.init(instance, inspector, event);
         instance.methodInstance = event.method();
-        instance.location = event.location();
+        instance.location = new LocationSnapshot(event.location());
         ThreadReference t = null;
         boolean lock = false;
         try{
@@ -32,12 +32,13 @@ public class InspectedMethodEntry extends InspectedMethod {
             if(t != null && lock)
                 JDIReachingUtil.resume(t);
         }
+        instance.buildString();
         return instance;
     }
     public void register(Inspector manager){
         manager.registerMethod(this);
     }
-    public String buildString(){
+    protected String internalBuildString(){
         StringBuffer builder = new StringBuffer();
         String callerName = "<UNKNOWN>";
         if(this.caller != null)

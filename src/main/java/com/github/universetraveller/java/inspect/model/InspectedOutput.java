@@ -10,10 +10,11 @@ public class InspectedOutput extends InspectedEvent{
         InspectedEvent.init(instance, inspector, null);
         instance.name = level == STDOUT ? "StdOut" : "StdErr";
         instance.content = content;
+        instance.buildString();
         return instance;
     }
 
-    public String buildString(){
+    protected String internalBuildString(){
         return new StringBuffer()
                      .append("<").append(this.name).append(">")
                      .append(this.content)

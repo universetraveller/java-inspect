@@ -22,7 +22,7 @@ public class InspectedVariableChange {
         this.toInstance = to;
         this.fromValue = from.getValueString();
         this.toValue = to.getValueString();
-        this.location = loc;
+        this.location = new LocationSnapshot(loc);
     }
 
     public InspectedVariableChange(InspectedVariable to, Location loc){
@@ -32,7 +32,7 @@ public class InspectedVariableChange {
         this.fromValue = "<EMPTY>";
         this.toInstance = to;
         this.toValue = to.getValueString();
-        this.location = loc;
+        this.location = new LocationSnapshot(loc);
     }
 
     public String toString(){

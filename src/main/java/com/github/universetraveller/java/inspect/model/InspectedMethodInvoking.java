@@ -35,9 +35,10 @@ public class InspectedMethodInvoking extends InspectedEvent{
     public void finish(Event event){
         this.tail = event instanceof MethodExitEvent ? InspectedMethodExit.getInstance(manager, (MethodExitEvent)event) : InspectedMethodExit.getInstance(manager, (ExceptionEvent)event);
         this.tail.finish(manager);
+        this.buildString();
     }
 
-    public String buildString(){
+    protected String internalBuildString(){
         Method met = this.head.getMethodInstance();
         return String.format("<MethodInvoking method='%s' location='%s' args='%s' returnType='%s' returnValue='%s' executionTime='%s' frameDepth='%s'/>", met, met.location(), String.join(",", met.argumentTypeNames()), met.returnTypeName(), this.tail.getExectionValue(), this.tail.getExectionTime(), this.head.getFrameDepth());
     }

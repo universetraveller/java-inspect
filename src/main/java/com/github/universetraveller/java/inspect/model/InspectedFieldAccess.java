@@ -16,11 +16,12 @@ public class InspectedFieldAccess extends InspectedEvent{
         instance.value = event.valueCurrent();
         instance.fieldInstance = event.field();
         instance.fieldName = event.field().name();
-        instance.location = event.location();
+        instance.location = new LocationSnapshot(event.location());
+        instance.buildString();
         return instance;
     }
 
-    public String buildString(){
+    protected String internalBuildString(){
         return String.format("<AccessField name='%s' value='%s' location='%s'/>", this.fieldInstance, this.value, this.location);
     }
 }

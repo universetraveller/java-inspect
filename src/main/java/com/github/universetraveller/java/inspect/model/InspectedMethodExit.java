@@ -24,7 +24,7 @@ public class InspectedMethodExit extends InspectedMethod{
         InspectedMethodExit instance = new InspectedMethodExit();
         InspectedEvent.init(instance, inspector, event);
         instance.methodInstance = event.method();
-        instance.location = event.location();
+        instance.location = new LocationSnapshot(event.location());
         instance.exectionValue = event.returnValue();
         ThreadReference t = null;
         boolean lock = false;
@@ -46,13 +46,14 @@ public class InspectedMethodExit extends InspectedMethod{
         }
         instance.exectionTime = -1;
         instance.exitCause = "return";
+        instance.buildString();
         return instance;
     }
     public static InspectedMethodExit getInstance(Inspector inspector, ExceptionEvent event){
         InspectedMethodExit instance = new InspectedMethodExit();
         InspectedEvent.init(instance, inspector, event);
         instance.methodInstance = event.catchLocation().method();
-        instance.location = event.catchLocation();
+        instance.location = new LocationSnapshot(event.catchLocation());
         instance.exectionValue = null;
         ThreadReference t = null;
         boolean lock = false;
@@ -74,14 +75,16 @@ public class InspectedMethodExit extends InspectedMethod{
         }
         instance.exectionTime = -1;
         instance.exitCause = "exception";
+        instance.buildString();
         return instance;
     }
     public void finish(Inspector inspector){
         InspectedMethodEntry entry = inspector.finishMethod(this);
         if(entry != null)
             this.exectionTime = this.eventTime - entry.getEventTime();
+        this.buildString();
     }
-    public String buildString(){
+    protected String internalBuildString(){
         String callerName = "<UNKNOWN>";
         if(this.destFrame != null)
             callerName = String.format("%s(%s)", this.destFrame.location().method(), this.destFrame.location());

@@ -21,7 +21,7 @@ public class InspectedMethod extends InspectedEvent {
         return location;
     }
     protected Location location;
-    public String buildString(){
+    protected String internalBuildString(){
         return String.format("%s(%s)", methodInstance, location);
     }
 }

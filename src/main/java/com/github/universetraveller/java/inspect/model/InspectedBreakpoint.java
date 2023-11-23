@@ -2,7 +2,6 @@ package com.github.universetraveller.java.inspect.model;
 
 import java.util.List;
 
-import javax.swing.JScrollBar;
 
 import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.sun.jdi.AbsentInformationException;
@@ -46,12 +45,14 @@ public class InspectedBreakpoint extends InspectedEvent {
         InspectedBreakpoint instance = new InspectedBreakpoint();
         InspectedEvent.init(instance, inspector, event);
         instance.name = "Breakpoint";
-        instance.location = event.location();
+        instance.location = new LocationSnapshot(event.location());
         initVariables(instance);
         inspectThread(instance, inspector, event.thread());
+        instance.buildString();
         return instance;
     }
-    public String buildString(){
+
+    protected String internalBuildString(){
         StringBuffer builder = new StringBuffer();
         builder.append(String.format("<%s location='%s' frameDepth='%s'", this.name, this.location, this.frameDepth));
         boolean addVariables = false;

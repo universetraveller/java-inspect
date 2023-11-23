@@ -1,3 +1,4 @@
+/root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/LocationSnapshot.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/util/StreamUtil.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedException.java
@@ -12,6 +13,7 @@
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/Report.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedEvent.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedVariable.java
+/root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/LineInfo.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectionReport.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/test/invoker/DefaultClassLoaderJUnitCoreTestInvoker.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/inspector/MainInspector.java

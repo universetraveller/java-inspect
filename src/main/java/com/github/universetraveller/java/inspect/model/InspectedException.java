@@ -18,7 +18,7 @@ public class InspectedException extends InspectedEvent {
    public static InspectedException getInstance(Inspector inspector, ExceptionEvent event){
         InspectedException instance = new InspectedException();
         InspectedEvent.init(instance, inspector, event);
-        instance.location = event.catchLocation();
+        instance.location = new LocationSnapshot(event.catchLocation());
         instance.exceptionReference = event.exception();
         instance.stackTrace = new ArrayList<>();
         boolean lock = false;
@@ -34,9 +34,10 @@ public class InspectedException extends InspectedEvent {
             if(lock)
                 JDIReachingUtil.resume(event.thread());
         }
+        instance.buildString();
         return instance;
    } 
-   public String buildString(){
+   protected String internalBuildString(){
         StringBuilder builder = new StringBuilder();
         builder.append(String.format("<Exception type='%s' occurAt='%s'>", this.exceptionReference, this.location)).append("\n");
         for(String line : this.stackTrace)

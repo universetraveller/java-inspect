@@ -1,5 +1,6 @@
 package com.github.universetraveller.java.inspect.model;
 
+
 import com.sun.jdi.event.Event;
 
 public abstract class InspectedEvent {
@@ -12,12 +13,24 @@ public abstract class InspectedEvent {
         return id;
     }
     protected Event eventInstance;
+    protected String buildStringCache;
     protected static void init(InspectedEvent instance, Inspector inspector, Event event){
         instance.eventTime = inspector.getRunningTime();
         instance.id = inspector.getNextId();
         instance.eventInstance = event;
+        instance.buildStringCache = "<UNINITIALIZED>";
     }
-    public abstract String buildString();
+    public String buildString(){
+        try{
+            this.buildStringCache = this.internalBuildString();
+        }catch(Exception e){
+            // ignore it
+        }
+        return this.buildStringCache;
+    }
+
+    protected abstract String internalBuildString();
+
     public String toString(){
         return buildString();
     }
