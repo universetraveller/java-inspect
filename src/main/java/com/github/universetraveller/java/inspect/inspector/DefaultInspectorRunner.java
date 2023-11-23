@@ -14,6 +14,8 @@ import com.github.universetraveller.java.inspect.model.InspectedStep;
 import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.model.InspectorRunner;
 import com.github.universetraveller.java.inspect.util.StreamUtil;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Method;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
@@ -122,9 +124,18 @@ public class DefaultInspectorRunner extends InspectorRunner {
     private static void handleExceptionEvent(Inspector instance, Event event) {
         instance.getLogger().fine(String.format("Handle exception <%s>", event));
         ExceptionEvent exceptionEvent = (ExceptionEvent)event;
-        if(!instance.isInspectImplicitMethod() && !instance.canHandleMethodEntry() && instance.isHandlingGlobalMethod(exceptionEvent.catchLocation().method())){
-            buildInvokingTail(instance, exceptionEvent);
-            return;
+        if(!instance.isInspectImplicitMethod() && !instance.canHandleMethodEntry()){
+            try{
+                Method exceptionMethod = exceptionEvent.thread().frame(0).location().method();
+                if(instance.isHandlingGlobalMethod(exceptionMethod)){
+                    instance.removeHandlingMethod(exceptionEvent.catchLocation().method());
+                    instance.enableGlobalEntryHandler();
+                    buildInvokingTail(instance, exceptionEvent);
+                    return;
+                }
+            }catch(IncompatibleThreadStateException e){
+                instance.getLogger().warning("Cannot get frame while handling %s so cannot detect if it is handling global method");
+            }
         }
         instance.addEvent(InspectedException.getInstance(instance, exceptionEvent));
     }

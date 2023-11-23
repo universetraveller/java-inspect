@@ -24,7 +24,6 @@ com/github/universetraveller/java/inspect/maven/InspectorMojo.class
 com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker$2.class
 com/github/universetraveller/java/inspect/reporter/FileReporter.class
 com/github/universetraveller/java/inspect/reporter/FileInspectionReporter.class
-com/github/universetraveller/java/inspect/model/LineInfo.class
 com/github/universetraveller/java/inspect/model/InspectorRunner.class
 com/github/universetraveller/java/inspect/model/InspectedMethod.class
 com/github/universetraveller/java/inspect/model/Inspector.class
