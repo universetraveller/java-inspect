@@ -17,6 +17,7 @@ public class InspectedMethod extends InspectedEvent {
     }
     protected List<StackFrame> stack;
     protected StackFrame caller;
+    protected Location callerLocation;
     public Location getLocation() {
         return location;
     }

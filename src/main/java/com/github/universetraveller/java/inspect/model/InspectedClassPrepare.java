@@ -11,9 +11,11 @@ public class InspectedClassPrepare extends InspectedEvent {
         InspectedEvent.init(instance, inspector, event);
 	try{
 		instance.classReference = (ClassType) event.referenceType();
+        instance.className = event.referenceType().name();
 	}catch(ClassCastException e){
 		inspector.getLogger().warning(String.format("%s occurs when initializing InspectedClassPrepare; skip", e));
 		instance.classReference = null;
+        instance.className = "<UNKNOWN>";
 	}
         instance.eventInstance = event;
         instance.buildString();

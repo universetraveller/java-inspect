@@ -5,6 +5,7 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 
 public class InspectedMethodEntry extends InspectedMethod {
@@ -21,18 +22,18 @@ public class InspectedMethodEntry extends InspectedMethod {
             lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());
-            instance.caller = t.frame(1);
-            instance.nowFrame = t.frame(0);
+            instance.caller = t.frameCount() > 1 ? t.frame(1) : null;
+            instance.nowFrame = t.frameCount() > 0 ? t.frame(0) : null;
+            instance.callerLocation = instance.caller == null ? null : new LocationSnapshot(instance.caller.location());
         }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.nowFrame = null;
-        }finally{
-            if(t != null && lock)
-                JDIReachingUtil.resume(t);
         }
         instance.buildString();
+        if(t != null && lock)
+            JDIReachingUtil.resume(t);
         return instance;
     }
     public void register(Inspector manager){
@@ -41,8 +42,8 @@ public class InspectedMethodEntry extends InspectedMethod {
     protected String internalBuildString(){
         StringBuffer builder = new StringBuffer();
         String callerName = "<UNKNOWN>";
-        if(this.caller != null)
-            callerName = String.format("%s(%s)", this.caller.location().method(), this.caller.location());
+        if(this.callerLocation != null)
+            callerName = String.format("%s(%s)", this.callerLocation.method(), this.callerLocation);
         builder.append(String.format("<MethodEntry method='%s' location='%s' frameDepth='%s' caller='%s' returnType='%s'>", this.methodInstance, this.location, this.frameDepth, callerName, this.methodInstance.returnTypeName())).append("\n");
         for(String typeName : this.methodInstance.argumentTypeNames())
             builder.append("\t").append(String.format("<Arg name='%s'/>", typeName)).append("\n");

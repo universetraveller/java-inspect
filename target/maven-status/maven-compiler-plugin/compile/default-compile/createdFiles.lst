@@ -37,4 +37,5 @@ com/github/universetraveller/java/inspect/util/JDIReachingUtil.class
 com/github/universetraveller/java/inspect/model/InspectedVariable.class
 com/github/universetraveller/java/inspect/inspector/MainInspector.class
 com/github/universetraveller/java/test/invoker/ParseResult.class
+com/github/universetraveller/java/inspect/model/StackFrameSnapshot.class
 com/github/universetraveller/java/inspect/model/InspectedException.class

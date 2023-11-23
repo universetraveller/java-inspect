@@ -33,9 +33,9 @@ public class InspectedBreakpoint extends InspectedEvent {
                 instance.variableChanges = inspector.updateVariableMap(targetFrames);
             instance.frameDepth = t.frameCount();
         }catch(AbsentInformationException e){
-            inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling breakpoint event; skip", e));
+            inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling %s event; skip", e, instance.name));
         }catch(IncompatibleThreadStateException | VMDisconnectedException f){
-            inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling breakpoint event; skip", f));
+            inspector.getLogger().warning(String.format("%s occurs at inspecting variables at handling %s event; skip", f, instance.name));
         }finally{
             if(lock)
                 JDIReachingUtil.resume(t);

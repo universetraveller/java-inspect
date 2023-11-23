@@ -37,6 +37,7 @@ public class JDIReachingUtil {
 	public static boolean suspend(ThreadReference t){
 		try{
 			t.suspend();
+			// Do nothing here. I think it is better to suspend via vm.suspend()
 			return true;
 		}catch(VMDisconnectedException e){
 			return false;
@@ -46,6 +47,7 @@ public class JDIReachingUtil {
 	public static void resume(ThreadReference t){
 		try{
 			t.resume();
+			// The same as suspend(ThreadReference). That is a dangerous behaviour
 		}catch(VMDisconnectedException e){
 			// ignore it
 		}

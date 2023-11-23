@@ -5,6 +5,7 @@
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedStep.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectorRunner.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedFieldAccess.java
+/root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/StackFrameSnapshot.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/util/JDIReachingUtil.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/maven/InspectorMojo.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/DefaultMain.java

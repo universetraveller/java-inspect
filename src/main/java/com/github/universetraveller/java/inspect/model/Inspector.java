@@ -170,7 +170,7 @@ public abstract class Inspector extends BaseInspector {
             arguments.get("options").setValue("-cp " + this.classPath);
         this.logger.config(String.format("JVM invoking arguments: %s %s", arguments.get("main"), arguments.get("options")));
         VirtualMachine vm = launchingConnector.launch(arguments);
-        this.startTimeStamp = this.calendar.getTimeInMillis();
+        this.startTimeStamp = Calendar.getInstance().getTimeInMillis();
         return vm;
     }
 
@@ -180,7 +180,7 @@ public abstract class Inspector extends BaseInspector {
     }
 
     public long getRunningTime(){
-        return this.calendar.getTimeInMillis() - this.startTimeStamp;
+        return Calendar.getInstance().getTimeInMillis() - this.startTimeStamp;
     }
 
     public void addEvent(InspectedEvent event){
@@ -378,7 +378,7 @@ public abstract class Inspector extends BaseInspector {
     public boolean isHandlingGlobalMethod(Method method){
 	    Method nowHandling = (Method)this.globalEntryRequest.getProperty("HANDLING");
 	    if(nowHandling == null){
-		    this.logger.warning(String.format("%s try to compare with null; skip it", method));
+		    //this.logger.warning(String.format("%s try to compare with null; skip it", method));
 		    return false;
 	    }
         return nowHandling.equals(method);

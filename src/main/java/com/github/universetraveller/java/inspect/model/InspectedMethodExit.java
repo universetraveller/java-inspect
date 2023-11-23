@@ -20,6 +20,9 @@ public class InspectedMethodExit extends InspectedMethod{
     }
     private StackFrame destFrame;
     private String exitCause;
+    public String getExitCause() {
+        return exitCause;
+    }
     public static InspectedMethodExit getInstance(Inspector inspector, MethodExitEvent event){
         InspectedMethodExit instance = new InspectedMethodExit();
         InspectedEvent.init(instance, inspector, event);
@@ -33,20 +36,20 @@ public class InspectedMethodExit extends InspectedMethod{
             lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());        
-            instance.caller = t.frame(0);
-            instance.destFrame = t.frame(0);
+            instance.caller = t.frameCount() > 0 ? t.frame(0) : null;
+            instance.destFrame = instance.caller;
+            instance.callerLocation = instance.caller == null ? null : new LocationSnapshot(instance.caller.location());
         }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.destFrame = null;
-        }finally{
-            if(t != null && lock)
-                JDIReachingUtil.resume(t);
         }
         instance.exectionTime = -1;
         instance.exitCause = "return";
         instance.buildString();
+        if(t != null && lock)
+            JDIReachingUtil.resume(t);
         return instance;
     }
     public static InspectedMethodExit getInstance(Inspector inspector, ExceptionEvent event){
@@ -62,20 +65,20 @@ public class InspectedMethodExit extends InspectedMethod{
             lock = JDIReachingUtil.suspend(t);
             instance.frameDepth = t.frameCount();
             instance.stack = inspector.getMaxFrameCountToInspect() > t.frameCount() ? t.frames() : t.frames(0, inspector.getMaxFrameCountToInspect());        
-            instance.caller = t.frame(0);
-            instance.destFrame = t.frame(0);
+            instance.caller = t.frameCount() > 0 ? t.frame(0) : null;
+            instance.destFrame = instance.caller;
+            instance.callerLocation = instance.caller == null ? null : new LocationSnapshot(instance.caller.location());
         }catch(IncompatibleThreadStateException | VMDisconnectedException e){
             instance.frameDepth = -1;
             instance.stack = null;
             instance.caller = null;
             instance.destFrame = null;
-        }finally{
-            if(t != null && lock)
-                JDIReachingUtil.resume(t);
         }
         instance.exectionTime = -1;
         instance.exitCause = "exception";
         instance.buildString();
+        if(t != null && lock)
+            JDIReachingUtil.resume(t);
         return instance;
     }
     public void finish(Inspector inspector){
@@ -86,8 +89,8 @@ public class InspectedMethodExit extends InspectedMethod{
     }
     protected String internalBuildString(){
         String callerName = "<UNKNOWN>";
-        if(this.destFrame != null)
-            callerName = String.format("%s(%s)", this.destFrame.location().method(), this.destFrame.location());
+        if(this.callerLocation != null)
+            callerName = String.format("%s(%s)", this.callerLocation.method(), this.callerLocation);
         return String.format("<MethodExit method='%s' location='%s' frameDepth='%s' returnValue='%s' executionTime='%s' caller='%s' exitCause='%s'/>", this.methodInstance, this.location, this.frameDepth, this.exectionValue, this.exectionTime, callerName, this.exitCause);
     }
 }

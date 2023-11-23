@@ -25,6 +25,7 @@ public abstract class InspectedEvent {
             this.buildStringCache = this.internalBuildString();
         }catch(Exception e){
             // ignore it
+            //System.out.println(e);
         }
         return this.buildStringCache;
     }

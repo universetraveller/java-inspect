@@ -40,6 +40,6 @@ public class InspectedMethodInvoking extends InspectedEvent{
 
     protected String internalBuildString(){
         Method met = this.head.getMethodInstance();
-        return String.format("<MethodInvoking method='%s' location='%s' args='%s' returnType='%s' returnValue='%s' executionTime='%s' frameDepth='%s'/>", met, met.location(), String.join(",", met.argumentTypeNames()), met.returnTypeName(), this.tail.getExectionValue(), this.tail.getExectionTime(), this.head.getFrameDepth());
+        return String.format("<MethodInvoking method='%s' location='%s' args='%s' returnType='%s' returnValue='%s' executionTime='%s' frameDepth='%s' exitCause='%s'/>", met, met.location(), String.join(",", met.argumentTypeNames()), met.returnTypeName(), this.tail.getExectionValue(), this.tail.getExectionTime(), this.head.getFrameDepth(), this.tail.getExitCause());
     }
 }

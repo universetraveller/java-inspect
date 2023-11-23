@@ -13,8 +13,11 @@ import com.github.universetraveller.java.inspect.model.InspectedOutput;
 import com.github.universetraveller.java.inspect.model.InspectedStep;
 import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.model.InspectorRunner;
+import com.github.universetraveller.java.inspect.model.LocationSnapshot;
+import com.github.universetraveller.java.inspect.util.JDIReachingUtil;
 import com.github.universetraveller.java.inspect.util.StreamUtil;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.BreakpointEvent;
@@ -67,9 +70,9 @@ public class DefaultInspectorRunner extends InspectorRunner {
         if(!isGlobal || instance.isInspectImplicitMethod()){
             buildMethodExit(instance, event);
         } else if(instance.isHandlingGlobalMethod(((MethodExitEvent)event).method())){
+            buildInvokingTail(instance, event);
             instance.removeHandlingMethod(((MethodExitEvent)event).method());
             instance.enableGlobalEntryHandler();
-            buildInvokingTail(instance, event);
         }
     }
 
@@ -126,15 +129,15 @@ public class DefaultInspectorRunner extends InspectorRunner {
         ExceptionEvent exceptionEvent = (ExceptionEvent)event;
         if(!instance.isInspectImplicitMethod() && !instance.canHandleMethodEntry()){
             try{
-                Method exceptionMethod = exceptionEvent.thread().frame(0).location().method();
-                if(instance.isHandlingGlobalMethod(exceptionMethod)){
-                    instance.removeHandlingMethod(exceptionEvent.catchLocation().method());
-                    instance.enableGlobalEntryHandler();
+                Location loc = exceptionEvent.thread().frame(0).location();
+                if(instance.isHandlingGlobalMethod(loc.method())){
                     buildInvokingTail(instance, exceptionEvent);
+                    instance.removeHandlingMethod(loc.method());
+                    instance.enableGlobalEntryHandler();
                     return;
                 }
             }catch(IncompatibleThreadStateException e){
-                instance.getLogger().warning("Cannot get frame while handling %s so cannot detect if it is handling global method");
+                instance.getLogger().warning(String.format("Cannot get frame while handling %s so cannot detect if it is handling global method", e));
             }
         }
         instance.addEvent(InspectedException.getInstance(instance, exceptionEvent));
