@@ -42,7 +42,7 @@ public class InspectionReport implements Report {
         StringBuffer builder = new StringBuffer();
         builder.append("<InspectionReport>\n");
         for(ReportElement element : this.elements)
-            builder.append(element.toString());
+            builder.append(element.toString()).append("\n");
         builder.append("\n</InspectionReport>");
         return builder.toString();
     }

@@ -200,7 +200,7 @@
         <accurateStep implementation="boolean" default-value="false">${accurateStep}</accurateStep>
         <baseDir implementation="java.lang.String">${baseDir}</baseDir>
         <breakPointLines implementation="java.lang.String">${breakPointLines}</breakPointLines>
-        <classFilterPattern implementation="java.lang.String" default-value="${project.groupId}">${classFilterPattern}</classFilterPattern>
+        <classFilterPattern implementation="java.lang.String" default-value="${project.groupId}.*">${classFilterPattern}</classFilterPattern>
         <classPath implementation="java.lang.String">${classPath}</classPath>
         <deepStep implementation="boolean" default-value="true">${deepStep}</deepStep>
         <inspectException implementation="boolean" default-value="true">${inspectException}</inspectException>
@@ -214,7 +214,7 @@
         <inspectVariables implementation="boolean" default-value="true">${inspectVariables}</inspectVariables>
         <inspectorName implementation="java.lang.String" default-value="com.github.universetraveller.java.inspect.inspector.MainInspector">${inspector}</inspectorName>
         <mainArgs implementation="java.lang.String">${mainArgs}</mainArgs>
-        <mainClass implementation="java.lang.String" default-value="com.github.universetraveller.java.test.DefaultClassLoaderJUnitCoreInvoker">${mainClass}</mainClass>
+        <mainClass implementation="java.lang.String" default-value="com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker">${mainClass}</mainClass>
         <maxFrameCountToInspect implementation="int" default-value="1">${maxFrameCountToInspect}</maxFrameCountToInspect>
         <methodToInspect implementation="java.lang.String">${methodToInspect}</methodToInspect>
         <oneShotBreakPoint implementation="boolean" default-value="true">${oneShotBreakPoint}</oneShotBreakPoint>

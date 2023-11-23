@@ -30,7 +30,7 @@ public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "inspector", defaultValue = "com.github.universetraveller.java.inspect.inspector.MainInspector")
     protected String inspectorName;
 
-    @Parameter(property = "mainClass", defaultValue = "com.github.universetraveller.java.test.DefaultClassLoaderJUnitCoreInvoker")
+    @Parameter(property = "mainClass", defaultValue = "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker")
     protected String mainClass;
 
     @Parameter(property = "mainArgs")
@@ -81,7 +81,7 @@ public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "maxFrameCountToInspect", defaultValue = "1")
     protected int maxFrameCountToInspect;
 
-    @Parameter(property = "classFilterPattern", defaultValue = "${project.groupId}")
+    @Parameter(property = "classFilterPattern", defaultValue = "${project.groupId}.*")
     protected String classFilterPattern;
 
     // skip classFilter
@@ -209,5 +209,13 @@ public class AbstractInspectorMojo extends AbstractMojo {
         
         if(mainClass == null || inspectorName.isEmpty())
             throw new MojoFailureException("mainClass and inspectorName should both be not empty");
+
+        try{
+            Class mainClassGot = Class.forName(this.mainClass);
+            if(mainClassGot == null)
+                throw new ClassNotFoundException("mainClass not found");
+        }catch(ClassNotFoundException e){
+            throw new MojoFailureException("mainClass not found", e);
+        }
     }
 }
