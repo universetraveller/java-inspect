@@ -19,12 +19,14 @@
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/inspector/MainInspector.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedMethodExit.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/BaseInspector.java
+/root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalization.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedBreakpoint.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedClassPrepare.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/maven/AbstractInspectorMojo.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/ReportElement.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedOutput.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/reporter/FileReporter.java
+/root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedField.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/Reporter.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/Inspector.java
 /root/workbench/java-inspect/src/main/java/com/github/universetraveller/java/inspect/model/InspectedMethodInvoking.java

@@ -306,7 +306,7 @@ public class SimpleOchiaiFaultLocalization {
         else if(event instanceof InspectedMethodEntry || event instanceof InspectedMethodExit)
             unitIdentifier = getMethodName((InspectedMethod)event);
         else if(event instanceof InspectedMethodInvoking)
-            unitIdentifier = getMethodName((InspectedMethod)(((InspectedMethodInvoking)event).getHead()))
+            unitIdentifier = getMethodName((InspectedMethod)(((InspectedMethodInvoking)event).getHead()));
         else
             this.logger.info("Found unknown type event " + event);
         this.results.get(locationIdentifier).putIfAbsent(unitIdentifier, new AnalysisUnit(locationIdentifier, unitIdentifier));

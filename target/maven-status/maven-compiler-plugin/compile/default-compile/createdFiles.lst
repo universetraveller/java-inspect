@@ -1,9 +1,12 @@
 com/github/universetraveller/java/inspect/model/BaseInspector.class
 com/github/universetraveller/java/inspect/model/LocationSnapshot.class
+com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalization.class
+com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalization$1.class
 com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker$1.class
 com/github/universetraveller/java/inspect/maven/AbstractInspectorMojo.class
 com/github/universetraveller/java/inspect/model/InspectionReport.class
 com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker.class
+com/github/universetraveller/java/inspect/downstream/fl/LinePack.class
 com/github/universetraveller/java/inspect/model/Report.class
 com/github/universetraveller/java/inspect/model/InspectedMethodInvoking.class
 com/github/universetraveller/java/inspect/model/InspectedVariableChange.class
@@ -15,6 +18,7 @@ com/github/universetraveller/java/test/invoker/DefaultClassLoaderJUnitCoreTestIn
 com/github/universetraveller/java/inspect/model/InspectedMethodExit.class
 com/github/universetraveller/java/inspect/model/InspectedBreakpoint.class
 com/github/universetraveller/java/inspect/model/InspectedMethodEntry.class
+com/github/universetraveller/java/inspect/model/InspectedField.class
 com/github/universetraveller/java/inspect/model/InspectedEvent.class
 com/github/universetraveller/java/inspect/model/InspectedFieldAccess.class
 com/github/universetraveller/java/inspect/model/InspectedStep.class
@@ -24,6 +28,7 @@ com/github/universetraveller/java/inspect/maven/InspectorMojo.class
 com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker$2.class
 com/github/universetraveller/java/inspect/reporter/FileReporter.class
 com/github/universetraveller/java/inspect/reporter/FileInspectionReporter.class
+com/github/universetraveller/java/inspect/downstream/fl/AnalysisUnit.class
 com/github/universetraveller/java/inspect/model/InspectorRunner.class
 com/github/universetraveller/java/inspect/model/InspectedMethod.class
 com/github/universetraveller/java/inspect/model/Inspector.class
