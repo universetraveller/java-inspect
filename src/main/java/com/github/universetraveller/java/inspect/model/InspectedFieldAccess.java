@@ -10,6 +10,15 @@ public class InspectedFieldAccess extends InspectedEvent{
     private Location location;
     private Field fieldInstance;
     private String fieldName;    
+
+    public Field getFieldInstance() {
+        return fieldInstance;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
     public static InspectedFieldAccess getInstance(Inspector inspector, AccessWatchpointEvent event){
         InspectedFieldAccess instance = new InspectedFieldAccess();
         InspectedEvent.init(instance, inspector, event);

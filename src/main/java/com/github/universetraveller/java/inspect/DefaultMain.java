@@ -10,7 +10,7 @@ import com.github.universetraveller.java.inspect.inspector.MainInspector;
 import com.github.universetraveller.java.inspect.model.InspectedEvent;
 
 public class DefaultMain {
-    public static void main(String[] args){
+    public static List<InspectedEvent> execute(String[] args){
         Map<String, List<String>> methodMap = new HashMap<>();
         for(String method : args[1].split("#")){
             String[] pair = method.split("::");
@@ -24,7 +24,11 @@ public class DefaultMain {
                                                 .configClassFilterPattern(args[3])
                                                 .configMethodToInspect(methodMap);
         inspector.execute(new DefaultInspectorRunner());
-        for(InspectedEvent event : inspector.getEvents())
+        return inspector.getEvents();
+    }
+
+    public static void main(String[] args){
+        for(InspectedEvent event : execute(args))
             System.out.println(event.buildString());
     }
 }

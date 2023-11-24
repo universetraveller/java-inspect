@@ -1,6 +1,8 @@
 package com.github.universetraveller.java.inspect.maven;
 
 import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalization;
 import com.github.universetraveller.java.inspect.inspector.DefaultInspectorRunner;
 import com.github.universetraveller.java.inspect.inspector.MainInspector;
 import com.github.universetraveller.java.inspect.reporter.FileInspectionReporter;
@@ -106,8 +109,10 @@ public class AbstractInspectorMojo extends AbstractMojo {
             internalClassPath = classPath + ":" + internalClassPath;
         getLog().info("Used classpath: " + internalClassPath);
         try{
-            if(this.inspectorName.equals("com.github.universetraveller.java.inspect.inspector.MainInspector"))
+            if(this.inspectorName.equals("com.github.universetraveller.java.inspect.inspector.MainInspector") || this.inspectorName.equals("MainInspector"))
                 runMainInspector();
+            else if(this.inspectorName.equals("com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalization") || this.inspectorName.equals("SimpleOchiaiFaultLocalization"))
+                runSimpleOchiaiFaultLocalization();
             else
                 throw new IllegalStateException("No valid inspector exists");
         }catch(Exception e){
@@ -171,6 +176,16 @@ public class AbstractInspectorMojo extends AbstractMojo {
         inspector.execute(new DefaultInspectorRunner());
         FileInspectionReporter reporter = new FileInspectionReporter(this.reportDir + "/InspectionReport", inspector);
         reporter.generateReport();
+    }
+
+     private void runSimpleOchiaiFaultLocalization()throws IOException {
+        SimpleOchiaiFaultLocalization.getInstance()
+            .configTestRunner(mainClass)
+            .configClassPath(internalClassPath)
+            .configGroupPattern(classFilterPattern)
+            .configCwd(reportDir)
+            .configReportDir(reportDir)
+            .execute();
     }
 
     private String getClassPaths() {

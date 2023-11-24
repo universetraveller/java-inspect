@@ -11,6 +11,10 @@ public class InspectedVariableChange {
     private InspectedVariable toInstance;
     private Location location;
 
+    public String getName() {
+        return name;
+    }
+
     public InspectedVariableChange(InspectedVariable from, InspectedVariable to, Location loc){
         this.typeName = from.getValueType();
         if(!to.getValueType().equals(this.typeName))

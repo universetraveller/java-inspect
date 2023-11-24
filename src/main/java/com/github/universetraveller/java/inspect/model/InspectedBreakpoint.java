@@ -18,6 +18,14 @@ public class InspectedBreakpoint extends InspectedEvent {
     protected List<InspectedVariable> variables;
     protected List<InspectedVariableChange> variableChanges;
     protected String name;
+
+    public Location getLocation() {
+        return location;
+    }
+    public List<InspectedVariableChange> getVariableChanges() {
+        return variableChanges;
+    }
+
     protected static void initVariables(InspectedBreakpoint instance){
         instance.frameDepth = -1;
         instance.variables = null;

@@ -95,7 +95,7 @@ public abstract class Inspector extends BaseInspector {
     protected void init(){
         this.eventId = -1;
         this.logger = Logger.getLogger(Inspector.class.getName());
-        this.logger.setLevel(Level.CONFIG);
+        this.logger.setLevel(Level.SEVERE);
         this.events = new ArrayList<>();
         this.variableMap = new ConcurrentHashMap<>();
         this.monitoredMethods = new ConcurrentHashMap<>();
