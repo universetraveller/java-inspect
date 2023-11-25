@@ -159,6 +159,13 @@
           <description></description>
         </parameter>
         <parameter>
+          <name>maxRunningTime</name>
+          <type>long</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
           <name>methodToInspect</name>
           <type>java.lang.String</type>
           <required>false</required>
@@ -175,6 +182,13 @@
         <parameter>
           <name>reportDir</name>
           <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>skipTimeoutTests</name>
+          <type>boolean</type>
           <required>false</required>
           <editable>true</editable>
           <description></description>
@@ -200,9 +214,11 @@
         <mainArgs implementation="java.lang.String">${mainArgs}</mainArgs>
         <mainClass implementation="java.lang.String" default-value="com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker">${mainClass}</mainClass>
         <maxFrameCountToInspect implementation="int" default-value="1">${maxFrameCountToInspect}</maxFrameCountToInspect>
+        <maxRunningTime implementation="long" default-value="-1">${maxRunningTime}</maxRunningTime>
         <methodToInspect implementation="java.lang.String">${methodToInspect}</methodToInspect>
         <oneShotBreakPoint implementation="boolean" default-value="true">${oneShotBreakPoint}</oneShotBreakPoint>
         <reportDir implementation="java.lang.String" default-value="./">${reportDir}</reportDir>
+        <skipTimeoutTests implementation="boolean" default-value="true">${skipTimeoutTests}</skipTimeoutTests>
       </configuration>
     </mojo>
   </mojos>

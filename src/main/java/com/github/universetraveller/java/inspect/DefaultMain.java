@@ -17,12 +17,16 @@ public class DefaultMain {
             methodMap.putIfAbsent(pair[0], new ArrayList<>());
             methodMap.get(pair[0]).add(pair[1]);
         }
+        long timeout = -1;
+        if(args.length >= 5)
+            timeout = Integer.parseInt(args[4]);
         MainInspector inspector = MainInspector.getInstance()
                                                 .configMainClass(args[0])
                                                 .configMainArgs(new String[]{args[1]})
                                                 .configClassPath(args[2])
                                                 .configClassFilterPattern(args[3])
-                                                .configMethodToInspect(methodMap);
+                                                .configMethodToInspect(methodMap)
+                                                .configMaxTimeRunning(timeout);
         inspector.execute(new DefaultInspectorRunner());
         return inspector.getEvents();
     }

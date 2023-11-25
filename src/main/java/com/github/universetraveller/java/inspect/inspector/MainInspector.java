@@ -3,7 +3,10 @@ package com.github.universetraveller.java.inspect.inspector;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
+import com.github.universetraveller.java.inspect.model.InspectedEvent;
+import com.github.universetraveller.java.inspect.model.InspectedOutput;
 import com.github.universetraveller.java.inspect.model.Inspector;
 import com.github.universetraveller.java.inspect.model.InspectorRunner;
 import com.sun.jdi.VMDisconnectedException;
@@ -15,7 +18,7 @@ public class MainInspector extends Inspector {
             boolean inspectException, boolean inspectOutput, boolean inspectFields, boolean inspectVariables,
             boolean inspectVariableChanges, boolean oneShotBreakPoint, boolean deepStep, boolean accurateStep,
             int maxFrameCountToInspect, String classFilterPattern, String[] classFilter, String[] classExclusionFilter,
-            String baseSrcDir, Map<String, List<String>> methodsToInspect) {
+            String baseSrcDir, Map<String, List<String>> methodsToInspect, long maxTimeRunning) {
         super();
         this.mainClass = mainClass;
         this.mainArgs = mainArgs;
@@ -39,6 +42,7 @@ public class MainInspector extends Inspector {
         this.classExclusionFilter = classExclusionFilter;
         this.baseSrcDir = baseSrcDir;
         this.methodsToInspect = methodsToInspect;
+        this.maxTimeRunning = maxTimeRunning;
     }
 
     public static MainInspector getInstance() {
@@ -67,7 +71,8 @@ public class MainInspector extends Inspector {
                 new String[0],
                 new String[] { "org.junit.*", "java.*", "sun.*", "jdk.*", "junit.*" },
                 "./",
-                new HashMap<>());
+                new HashMap<>(),
+                -1);
     }
 
     public MainInspector configMainClass(String mainClass) {
@@ -180,6 +185,11 @@ public class MainInspector extends Inspector {
         return this;
     }
 
+    public MainInspector configMaxTimeRunning(long config){
+        this.maxTimeRunning = config;
+        return this;
+    }
+
     private void validateFields() throws IllegalArgumentException{
         if(this.mainClass == null || this.vm == null)
             throw new IllegalArgumentException("Unexpected null argument(s)");
@@ -197,6 +207,9 @@ public class MainInspector extends Inspector {
             runner.run(this);
         }catch(VMDisconnectedException e){ 
             this.logger.info("VM may be disconnected. You can use attaching inspector to inspect tail events");
+        }catch(TimeoutException e){
+            this.logger.severe("VM expires (timeout)");
+            this.events.add(InspectedOutput.getInstance(this, "Inspector#TIMEOUT", InspectedOutput.STDERR));
         }catch (Exception e) {
             this.logger.severe("MainInspector process is unexpectedly stopped");
             e.printStackTrace();

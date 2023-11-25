@@ -34,6 +34,7 @@ public class DefaultInspectorRunner extends InspectorRunner {
     public void run(Inspector instance) throws Exception {
         EventSet events = null;
         while((events = instance.getVMEventSet()) != null){
+            instance.checkTimeout();
             for(Event event : events){
                     if(event instanceof VMDisconnectEvent){
                         instance.getLogger().info("VM is going to disconect");

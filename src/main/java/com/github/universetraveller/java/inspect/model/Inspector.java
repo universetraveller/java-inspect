@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +72,7 @@ public abstract class Inspector extends BaseInspector {
     protected String[] classExclusionFilter; 
     protected String baseSrcDir;
     protected Map<String, List<String>> methodsToInspect;
+    protected long maxTimeRunning;
 
     // invisible fields (can not be configured by users)
     protected String mainValue;
@@ -108,6 +110,7 @@ public abstract class Inspector extends BaseInspector {
         this.globalInvoking = null;
         this.startTimeStamp = 0;
         this.mainValue = null;
+        this.maxTimeRunning = -1;
     }
 
     public List<InspectedEvent> getEvents() {
@@ -287,6 +290,8 @@ public abstract class Inspector extends BaseInspector {
                 this.globalExitRequest = request3;
                 request3.enable();
             }
+        }else{
+            this.inspectGlobalMethod = this.inspectMethod;
         }
     }
     public boolean threadIsBusy(long id){
@@ -350,6 +355,8 @@ public abstract class Inspector extends BaseInspector {
     }
 
     public boolean canHandleMethodEntry(){
+        if(!this.inspectGlobalMethod)
+            return false;
         return this.globalEntryRequest.isEnabled();
     }
 
@@ -376,6 +383,8 @@ public abstract class Inspector extends BaseInspector {
     }
 
     public boolean isHandlingGlobalMethod(Method method){
+        if(!this.inspectGlobalMethod)
+            return false;
 	    Method nowHandling = (Method)this.globalEntryRequest.getProperty("HANDLING");
 	    if(nowHandling == null){
 		    //this.logger.warning(String.format("%s try to compare with null; skip it", method));
@@ -434,6 +443,12 @@ public abstract class Inspector extends BaseInspector {
             }
         }
         return collected;
+    }
+    public void checkTimeout() throws TimeoutException{
+        if(this.maxTimeRunning < 0)
+            return;
+        if(this.getRunningTime() > this.maxTimeRunning * 1000)
+            throw new TimeoutException("VM expired that reaches timeout");
     }
     public abstract void execute(InspectorRunner runner);
 }

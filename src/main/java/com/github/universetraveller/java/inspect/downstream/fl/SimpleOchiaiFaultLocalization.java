@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.github.universetraveller.java.inspect.DefaultMain;
 import com.github.universetraveller.java.inspect.model.InspectedBreakpoint;
+import com.github.universetraveller.java.inspect.model.InspectedClassPrepare;
 import com.github.universetraveller.java.inspect.model.InspectedEvent;
 import com.github.universetraveller.java.inspect.model.InspectedException;
 import com.github.universetraveller.java.inspect.model.InspectedFieldAccess;
@@ -143,28 +144,35 @@ public class SimpleOchiaiFaultLocalization {
         return ochiai(fe, fne, pe, pne);
     }
 
-    Set<String> failingTests;
-    Set<String> passingTests;
-    Map<String, Map<String, AnalysisUnit>> results;
-    List<AnalysisUnit> units;
-    String cwd;
-    String groupPattern;
-    String testRegularExpression;
-    Pattern testNamePattern;
-    String classPath;
-    String testRunner;
-    Logger logger;
-    String reportDir;
-    long failingNum;
-    long passingNum;
-    double lineScoreWeight;
-    final static Pattern exceptionPattern = Pattern.compile("<Exception type='(.+)' occurAt");
-    final static Pattern instancePattern = Pattern.compile("instance of (.+)\\(.+\\)");
-    final static Pattern methodPattern = Pattern.compile("<Method(Entry|Invoking|Exit) method='(.+\\(.+\\))' location=");
-    final static Pattern variableChangeNamePattern = Pattern.compile("(.*) in .*' type=");
+    protected Set<String> failingTests;
+    protected Set<String> passingTests;
+    protected Set<String> testClassNames;
+    protected Map<String, Map<String, AnalysisUnit>> results;
+    protected List<AnalysisUnit> units;
+    protected String cwd;
+    protected String groupPattern;
+    protected String testRegularExpression;
+    protected Pattern testNamePattern;
+    protected String classPath;
+    protected String testRunner;
+    protected Logger logger;
+    protected String reportDir;
+    protected long failingNum;
+    protected long passingNum;
+    protected double lineScoreWeight;
+    protected long timeout;
+    protected long counter;
+    protected boolean skipTimeoutTests;
+    protected long total;
+    protected long expiredTests;
+    protected final static Pattern exceptionPattern = Pattern.compile("<Exception type='(.+)' occurAt");
+    protected final static Pattern instancePattern = Pattern.compile("instance of (.+)\\(.+\\)");
+    protected final static Pattern methodPattern = Pattern.compile("<Method(Entry|Invoking|Exit) method='(.+\\(.+\\))' location=");
+    protected final static Pattern variableChangeNamePattern = Pattern.compile("(.*) in .*' type=");
     public SimpleOchiaiFaultLocalization(){
         this.failingTests = new HashSet<>();
         this.passingTests = new HashSet<>();
+        this.testClassNames = new HashSet<>();
         this.results = new ConcurrentHashMap<>();
         this.units = new ArrayList<>();
         this.cwd = "./";
@@ -177,6 +185,11 @@ public class SimpleOchiaiFaultLocalization {
         this.failingNum = 0;
         this.passingNum = 0;
         this.lineScoreWeight = 0.75;
+        this.timeout = -1;
+        this.counter = 0;
+        this.total = 0;
+        this.skipTimeoutTests = true;
+        this.expiredTests = 0;
         this.logger = Logger.getLogger(SimpleOchiaiFaultLocalization.class.getName());
         this.logger.setLevel(Level.INFO);
     }
@@ -210,10 +223,21 @@ public class SimpleOchiaiFaultLocalization {
         return this;
     }
 
+    public SimpleOchiaiFaultLocalization configTimeout(long config){
+        this.timeout = config;
+        return this;
+    }
+
+    public SimpleOchiaiFaultLocalization configSkipTimeoutTests(boolean config){
+        this.skipTimeoutTests = config;
+        return this;
+    }
+
     public String checkAndTransformTestFormat(String test) throws IOException {
         Matcher matches = this.testNamePattern.matcher(test);
         if(matches.find()){
-            return String.format("%s::%s", matches.group(1), matches.group(2));
+            this.testClassNames.add(matches.group(2));
+            return String.format("%s::%s", matches.group(2), matches.group(1));
         }
         throw new IOException("Test " + test + " does not match regular expression " + this.testRegularExpression);
 
@@ -250,7 +274,7 @@ public class SimpleOchiaiFaultLocalization {
         InspectedEvent lastStep = findLastStep(allEvents);
         for(InspectedEvent event : allEvents){
             if(collecting){
-                if(event instanceof InspectedOutput)
+                if(event instanceof InspectedOutput || event instanceof InspectedClassPrepare)
                     continue;
                 relevantEvents.add(event);
                 if(event.equals(lastStep) || event.getId() == lastStep.getId())
@@ -296,7 +320,7 @@ public class SimpleOchiaiFaultLocalization {
         return packs;
     }
 
-    private void analyzeUnpackEventInLine(InspectedEvent event, String locationIdentifier, String testName,
+    protected void analyzeUnpackEventInLine(InspectedEvent event, String locationIdentifier, String testName,
             boolean isFailingTest) {
         String unitIdentifier = event.toString();
         if(event instanceof InspectedFieldAccess || event instanceof InspectedFieldModification)
@@ -313,7 +337,7 @@ public class SimpleOchiaiFaultLocalization {
         this.results.get(locationIdentifier).get(unitIdentifier).addTest(testName, isFailingTest);
     }
 
-    private String getMethodName(InspectedMethod event) {
+    protected String getMethodName(InspectedMethod event) {
         String name = "<UNKNOWN_METHOD>";
         try{
             name = event.getMethodInstance().toString();
@@ -355,25 +379,32 @@ public class SimpleOchiaiFaultLocalization {
         return name;
     }
 
-    private void analyzeLinePack(LinePack pack, String testName, boolean isFailingTest) {
+    protected void analyzeLinePack(LinePack pack, String testName, boolean isFailingTest) {
         InspectedEvent step = pack.getStep();
         String locationIdentifier = step.toString();
         if(step instanceof InspectedStep)
             locationIdentifier = ((InspectedStep) step).getLocation().toString();
-        results.putIfAbsent(locationIdentifier, new HashMap<>());
+        if(locationIdentifier.startsWith("<"))
+            return;
+        if(this.testClassNames.contains(locationIdentifier.substring(0, locationIdentifier.indexOf(":"))))
+            return;
+        results.putIfAbsent(locationIdentifier, new ConcurrentHashMap<>());
         results.get(locationIdentifier).putIfAbsent("LINE", new AnalysisUnit(locationIdentifier, "LINE"));
         results.get(locationIdentifier).get("LINE").addTest(testName, isFailingTest);
         if(step instanceof InspectedBreakpoint || step instanceof InspectedStep){
             // though check instance type multi-time, it makes code clean
-            for(InspectedVariableChange change : ((InspectedBreakpoint)step).getVariableChanges()){
-                String name = change.getName();
-                Matcher matcher = variableChangeNamePattern.matcher(name);
-                if(matcher.find())
-                    name = matcher.group(1);
-                else
-                    name = name.split(" ")[0];
-                results.get(locationIdentifier).putIfAbsent(name, new AnalysisUnit(locationIdentifier, name));
-                results.get(locationIdentifier).get(name).addTest(testName, isFailingTest);
+            List<InspectedVariableChange> changes = ((InspectedBreakpoint)step).getVariableChanges();
+            if(changes != null){
+                for(InspectedVariableChange change : changes){
+                    String name = change.getName();
+                    Matcher matcher = variableChangeNamePattern.matcher(name);
+                    if(matcher.find())
+                        name = matcher.group(1);
+                    else
+                        name = name.split(" ")[0];
+                    results.get(locationIdentifier).putIfAbsent(name, new AnalysisUnit(locationIdentifier, name));
+                    results.get(locationIdentifier).get(name).addTest(testName, isFailingTest);
+                }
             }
         }
         for(InspectedEvent event : pack.getPackedEvents())
@@ -391,7 +422,33 @@ public class SimpleOchiaiFaultLocalization {
         this.logger.info("Try to execute " + testName);
         // To get the most accurate information I launch a new VM ro execute single test though it is high cost
         // executin it with multi-thread may ease the problem
-        List<InspectedEvent> events = collectRelevantEvents(DefaultMain.execute(new String[]{this.testRunner, testName, this.classPath, this.groupPattern}));
+        List<InspectedEvent> rawEvents = DefaultMain.execute(new String[]{this.testRunner, testName, this.classPath, this.groupPattern, String.valueOf(this.timeout)});
+        // Handle inspector timeout
+        InspectedEvent tailEvent = rawEvents.get(rawEvents.size() - 1);
+        if(this.skipTimeoutTests && tailEvent instanceof InspectedOutput){
+            if(((InspectedOutput)tailEvent).getContent().equals("Inspector#TIMEOUT")){
+                // do not need to further synchronize the set 
+                // because we can inititalize a concurrent set in subclasses' constructors (if it is multi-thread program)
+                // update tests number
+                this.expiredTests ++;
+                this.total --;
+                this.counter --;
+                if(isFailingTest){
+                    this.failingNum --;
+                    this.failingTests.remove(testName);
+                }else{
+                    this.passingNum --;
+                    this.passingTests.remove(testName);
+                }
+                if(this.failingNum != this.failingTests.size() 
+                                || this.passingNum != this.passingTests.size() 
+                                || (this.failingNum + this.passingNum) != total)
+                    this.logger.severe("Unmatched tests number between num of tests and set size");
+                this.logger.info("Expires " + testName + " because of timeout");
+                return;
+            }
+        }
+        List<InspectedEvent> events = collectRelevantEvents(rawEvents);
         this.logger.info("Collected " + events.size() + " relevant events");
         for(LinePack pack : generateLinePack(events))
             analyzeLinePack(pack, testName, isFailingTest);
@@ -401,15 +458,14 @@ public class SimpleOchiaiFaultLocalization {
     public void execute() throws IllegalArgumentException, IOException {
         check();
         fillTests();
-        long counter = 1;
-        long total = this.failingNum + this.passingNum;
+        total = this.failingNum + this.passingNum;
         for(String failingTestName : this.failingTests){
-            this.logger.info("Running: " + counter + "/" + total);
+            this.logger.info("Running: " + counter + "/" + total + " Expired tests: " + this.expiredTests);
             executeSingleTest(failingTestName, true);
             counter++;
         }
         for(String passTestName : this.passingTests){
-            this.logger.info("Running: " + counter + "/" + total);
+            this.logger.info("Running: " + counter + "/" + total + " Expired tests: " + this.expiredTests);
             executeSingleTest(passTestName, false);
             counter++;
         }
@@ -417,19 +473,19 @@ public class SimpleOchiaiFaultLocalization {
         writeReport(generateReport());
     }
 
-    private void writeReport(List<String> report) throws IOException {
+    protected void writeReport(List<String> report) throws IOException {
         StringBuffer builder = new StringBuffer();
         for(String line : report)
             builder.append(line).append("\n");
         FileUtils.writeStringToFile(new File(this.reportDir+"/OchiaiReport"), builder.toString());
     }
 
-    private void buildUnits() {
+    protected void buildUnits() {
         buildScoreForLines();
         rankScoreForLines();
     }
 
-    private void rankScoreForLines() {
+    protected void rankScoreForLines() {
         Comparator<AnalysisUnit> comparator = new Comparator<AnalysisUnit>() {
             @Override
             public int compare(AnalysisUnit o1, AnalysisUnit o2){
@@ -439,12 +495,12 @@ public class SimpleOchiaiFaultLocalization {
         this.units.sort(comparator);
     }
 
-    private double ochiaiForUnit(AnalysisUnit unit){
+    protected double ochiaiForUnit(AnalysisUnit unit){
         long fe = unit.getFailingTestsCount();
         long pe = unit.getPassingTestsCount();
         return ochiai(fe, this.failingNum - fe, pe, this.passingNum - pe);
     }
-    private void buildScoreForLines() {
+    protected void buildScoreForLines() {
         for(String line : this.results.keySet()){
             AnalysisUnit lineUnit = this.results.get(line).get("LINE");
             double lineScore = ochiaiForUnit(lineUnit);
@@ -463,11 +519,17 @@ public class SimpleOchiaiFaultLocalization {
         }
     }
 
+    protected boolean abort(AnalysisUnit unit) {
+        return false;
+    }
+
     public List<String> generateReport(){
         List<String> reportContent = new ArrayList<>();
         ListIterator<AnalysisUnit> iterator = this.units.listIterator(this.units.size());
         while(iterator.hasPrevious()){
             AnalysisUnit unit = (AnalysisUnit)iterator.previous();
+            if(abort(unit))
+                continue;
             if(unit.getUnitIdentifier().equals("LINE"))
                 reportContent.add(String.format("%s$%s", unit.getLineIdentifier(), unit.getScore()));
             else

@@ -19,6 +19,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalization;
+import com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalizationMT;
 import com.github.universetraveller.java.inspect.inspector.DefaultInspectorRunner;
 import com.github.universetraveller.java.inspect.inspector.MainInspector;
 import com.github.universetraveller.java.inspect.reporter.FileInspectionReporter;
@@ -99,6 +100,12 @@ public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "reportDir", defaultValue = "./")
     protected String reportDir;
 
+    @Parameter(property = "maxRunningTime", defaultValue = "-1")
+    protected long maxRunningTime;
+
+    @Parameter(property = "skipTimeoutTests", defaultValue = "true")
+    protected boolean skipTimeoutTests;
+
     protected String internalClassPath;
 
     @Override
@@ -113,6 +120,8 @@ public class AbstractInspectorMojo extends AbstractMojo {
                 runMainInspector();
             else if(this.inspectorName.equals("com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalization") || this.inspectorName.equals("SimpleOchiaiFaultLocalization"))
                 runSimpleOchiaiFaultLocalization();
+            else if(this.inspectorName.equals("com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalizationMT") || this.inspectorName.equals("SimpleOchiaiFaultLocalizationMT"))
+                runSimpleOchiaiFaultLocalizationMT();
             else
                 throw new IllegalStateException("No valid inspector exists");
         }catch(Exception e){
@@ -171,7 +180,8 @@ public class AbstractInspectorMojo extends AbstractMojo {
 //                                  .configClassFilter()
 //                                  .configClassExclusionFilter()
                                     .configBaseSrcDir(baseDir)
-                                    .configMethodToInspect(methodMap);
+                                    .configMethodToInspect(methodMap)
+                                    .configMaxTimeRunning(maxRunningTime);
         
         inspector.execute(new DefaultInspectorRunner());
         FileInspectionReporter reporter = new FileInspectionReporter(this.reportDir + "/InspectionReport", inspector);
@@ -185,6 +195,20 @@ public class AbstractInspectorMojo extends AbstractMojo {
             .configGroupPattern(classFilterPattern)
             .configCwd(reportDir)
             .configReportDir(reportDir)
+            .configTimeout(maxRunningTime)
+            .configSkipTimeoutTests(skipTimeoutTests)
+            .execute();
+    }
+
+    private void runSimpleOchiaiFaultLocalizationMT() throws IOException {
+        SimpleOchiaiFaultLocalizationMT.getInstance()
+            .configTestRunner(mainClass)
+            .configClassPath(internalClassPath)
+            .configGroupPattern(classFilterPattern)
+            .configCwd(reportDir)
+            .configReportDir(reportDir)
+            .configTimeout(maxRunningTime)
+            .configSkipTimeoutTests(skipTimeoutTests)
             .execute();
     }
 

@@ -1,5 +1,6 @@
 com/github/universetraveller/java/inspect/model/BaseInspector.class
 com/github/universetraveller/java/inspect/model/LocationSnapshot.class
+com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalizationMT.class
 com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalization.class
 com/github/universetraveller/java/inspect/downstream/fl/SimpleOchiaiFaultLocalization$1.class
 com/github/universetraveller/java/test/invoker/JUnitCoreTestInvoker$1.class

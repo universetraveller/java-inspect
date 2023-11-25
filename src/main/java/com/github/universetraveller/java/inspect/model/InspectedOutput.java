@@ -3,6 +3,15 @@ package com.github.universetraveller.java.inspect.model;
 public class InspectedOutput extends InspectedEvent{
     private String content;
     private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
     public final static int STDOUT = 0;
     public final static int STDERR = 1;
     public static InspectedOutput getInstance(Inspector inspector, String content, int level){

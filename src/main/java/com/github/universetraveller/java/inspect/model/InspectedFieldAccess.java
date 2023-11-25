@@ -5,7 +5,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.Value;
 import com.sun.jdi.event.AccessWatchpointEvent;
 
-public class InspectedFieldAccess extends InspectedEvent{
+public class InspectedFieldAccess extends InspectedEvent implements InspectedField{
     private Value value;
     private Location location;
     private Field fieldInstance;
