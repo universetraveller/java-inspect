@@ -12,14 +12,16 @@ import com.github.universetraveller.java.inspect.model.InspectedEvent;
 public class DefaultMain {
     public static List<InspectedEvent> execute(String[] args){
         Map<String, List<String>> methodMap = new HashMap<>();
-        for(String method : args[1].split("#")){
-            String[] pair = method.split("::");
-            methodMap.putIfAbsent(pair[0], new ArrayList<>());
-            methodMap.get(pair[0]).add(pair[1]);
-        }
+	if(args.length >= 5){
+		for(String method : args[4].split("#")){
+		    String[] pair = method.split("::");
+		    methodMap.putIfAbsent(pair[0], new ArrayList<>());
+		    methodMap.get(pair[0]).add(pair[1]);
+		}
+	    }
         long timeout = -1;
-        if(args.length >= 5)
-            timeout = Integer.parseInt(args[4]);
+        if(args.length >= 6)
+            timeout = Integer.parseInt(args[5]);
         MainInspector inspector = MainInspector.getInstance()
                                                 .configMainClass(args[0])
                                                 .configMainArgs(new String[]{args[1]})

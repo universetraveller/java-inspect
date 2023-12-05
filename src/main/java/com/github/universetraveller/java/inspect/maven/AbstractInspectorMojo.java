@@ -31,7 +31,7 @@ public class AbstractInspectorMojo extends AbstractMojo {
     @Parameter(property = "plugin.artifactMap", readonly = true, required = true)
     protected Map<String, Artifact> pluginArtifactMap;    
 
-    @Parameter(property = "inspector", defaultValue = "com.github.universetraveller.java.inspect.inspector.MainInspector")
+    @Parameter(property = "inspector", defaultValue = "MainInspector")
     protected String inspectorName;
 
     @Parameter(property = "mainClass", defaultValue = "com.github.universetraveller.java.test.invoker.DefaultClassLoaderJUnitCoreTestInvoker")
@@ -116,11 +116,11 @@ public class AbstractInspectorMojo extends AbstractMojo {
             internalClassPath = classPath + ":" + internalClassPath;
         getLog().info("Used classpath: " + internalClassPath);
         try{
-            if(this.inspectorName.equals("com.github.universetraveller.java.inspect.inspector.MainInspector") || this.inspectorName.equals("MainInspector"))
+            if(this.inspectorName.equals("MainInspector"))
                 runMainInspector();
-            else if(this.inspectorName.equals("com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalization") || this.inspectorName.equals("SimpleOchiaiFaultLocalization"))
+            else if(this.inspectorName.equals("SimpleOchiaiFaultLocalization"))
                 runSimpleOchiaiFaultLocalization();
-            else if(this.inspectorName.equals("com.github.universetraveller.java.inspect.downstream.fl.SimpleOchiaiFaultLocalizationMT") || this.inspectorName.equals("SimpleOchiaiFaultLocalizationMT"))
+            else if(this.inspectorName.equals("SimpleOchiaiFaultLocalizationMT"))
                 runSimpleOchiaiFaultLocalizationMT();
             else
                 throw new IllegalStateException("No valid inspector exists");
@@ -243,7 +243,7 @@ public class AbstractInspectorMojo extends AbstractMojo {
     }
 
     private void checkProperties() throws MojoFailureException {
-        if(methodToInspect == null && breakPointLines == null)
+        if(inspectorName.equals("MainInspector") && methodToInspect == null && breakPointLines == null)
             throw new MojoFailureException("Should have at least one inspected method or breakpoint");
         
         if(mainClass == null || inspectorName.isEmpty())
