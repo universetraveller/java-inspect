@@ -422,7 +422,7 @@ public class SimpleOchiaiFaultLocalization {
         this.logger.info("Try to execute " + testName);
         // To get the most accurate information I launch a new VM ro execute single test though it is high cost
         // executin it with multi-thread may ease the problem
-        List<InspectedEvent> rawEvents = DefaultMain.execute(new String[]{this.testRunner, testName, this.classPath, this.groupPattern, String.valueOf(this.timeout)});
+        List<InspectedEvent> rawEvents = DefaultMain.execute(new String[]{this.testRunner, testName, this.classPath, this.groupPattern, testName, String.valueOf(this.timeout)});
         // Handle inspector timeout
         InspectedEvent tailEvent = rawEvents.get(rawEvents.size() - 1);
         if(this.skipTimeoutTests && tailEvent instanceof InspectedOutput){
